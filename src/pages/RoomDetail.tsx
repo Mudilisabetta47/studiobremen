@@ -1,0 +1,125 @@
+import { useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowLeft, Users, Maximize2, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import BookingWidget from "@/components/BookingWidget";
+import { rooms } from "@/data/rooms";
+
+const RoomDetail = () => {
+  const { id } = useParams();
+  const room = rooms.find((r) => r.id === id);
+
+  if (!room) {
+    return (
+      <main className="pt-20 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="font-display text-3xl mb-4">Zimmer nicht gefunden</h1>
+          <Link to="/zimmer">
+            <Button variant="hero">Zurück zur Übersicht</Button>
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="pt-20">
+      {/* Hero Image */}
+      <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
+        <img
+          src={room.image}
+          alt={room.title}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-primary/40" />
+        <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="container mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Link
+                to="/zimmer"
+                className="inline-flex items-center gap-2 text-primary-foreground/80 hover:text-accent transition-colors text-sm font-body mb-4"
+              >
+                <ArrowLeft size={16} /> Alle Zimmer
+              </Link>
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-primary-foreground">
+                {room.title}
+              </h1>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Details */}
+          <div className="lg:col-span-2">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="flex items-center gap-6 mb-8 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Users size={16} className="text-accent" /> Bis zu {room.guests} Gäste
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Maximize2 size={16} className="text-accent" /> {room.size}
+                </span>
+              </div>
+
+              <h2 className="font-display text-2xl font-semibold mb-4">Beschreibung</h2>
+              <p className="font-body text-muted-foreground leading-relaxed mb-10">
+                {room.longDescription}
+              </p>
+
+              <h2 className="font-display text-2xl font-semibold mb-4">Ausstattung</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {room.amenities.map((amenity) => (
+                  <div key={amenity} className="flex items-center gap-2 text-sm font-body text-muted-foreground">
+                    <Check size={14} className="text-accent flex-shrink-0" />
+                    {amenity}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Price Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <div className="bg-card border border-border rounded-lg p-8 sticky top-24 shadow-lg">
+              <p className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-2">Preis ab</p>
+              <div className="mb-6">
+                <span className="font-display text-4xl font-bold text-foreground">€{room.price}</span>
+                <span className="font-body text-muted-foreground"> / Nacht</span>
+              </div>
+              <Button variant="hero" className="w-full" size="lg">
+                Jetzt buchen
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-3 font-body">
+                Kostenlose Stornierung bis 48h vorher
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Booking Widget */}
+      <section className="bg-secondary/50 py-16">
+        <div className="container mx-auto px-4">
+          <BookingWidget />
+        </div>
+      </section>
+    </main>
+  );
+};
+
+export default RoomDetail;
