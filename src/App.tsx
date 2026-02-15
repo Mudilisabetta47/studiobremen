@@ -10,6 +10,12 @@ import RoomDetail from "./pages/RoomDetail";
 import Contact from "./pages/Contact";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminRooms from "./pages/admin/AdminRooms";
+import AdminBookings from "./pages/admin/AdminBookings";
+import AdminCalendar from "./pages/admin/AdminCalendar";
 
 const queryClient = new QueryClient();
 
@@ -19,18 +25,25 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/zimmer" element={<Rooms />} />
-            <Route path="/zimmer/:id" element={<RoomDetail />} />
-            <Route path="/kontakt" element={<Contact />} />
-            <Route path="/impressum" element={<Legal />} />
-            <Route path="/datenschutz" element={<Legal />} />
-            <Route path="/agb" element={<Legal />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Layout><Index /></Layout>} />
+          <Route path="/zimmer" element={<Layout><Rooms /></Layout>} />
+          <Route path="/zimmer/:id" element={<Layout><RoomDetail /></Layout>} />
+          <Route path="/kontakt" element={<Layout><Contact /></Layout>} />
+          <Route path="/impressum" element={<Layout><Legal /></Layout>} />
+          <Route path="/datenschutz" element={<Layout><Legal /></Layout>} />
+          <Route path="/agb" element={<Layout><Legal /></Layout>} />
+
+          {/* Admin routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+          <Route path="/admin/rooms" element={<AdminLayout><AdminRooms /></AdminLayout>} />
+          <Route path="/admin/bookings" element={<AdminLayout><AdminBookings /></AdminLayout>} />
+          <Route path="/admin/calendar" element={<AdminLayout><AdminCalendar /></AdminLayout>} />
+
+          <Route path="*" element={<Layout><NotFound /></Layout>} />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -1,1 +1,7 @@
 project_id = "xvlpynxmtbihkarcgoyb"
+
+[functions.smoobu-sync]
+verify_jwt = false
+
+[functions.smoobu-webhook]
+verify_jwt = false
