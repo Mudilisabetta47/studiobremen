@@ -16,6 +16,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRooms from "./pages/admin/AdminRooms";
 import AdminBookings from "./pages/admin/AdminBookings";
 import AdminCalendar from "./pages/admin/AdminCalendar";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminStats from "./pages/admin/AdminStats";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,8 @@ const App = () => (
           <Route path="/admin/rooms" element={<AdminLayout><AdminRooms /></AdminLayout>} />
           <Route path="/admin/bookings" element={<AdminLayout><AdminBookings /></AdminLayout>} />
           <Route path="/admin/calendar" element={<AdminLayout><AdminCalendar /></AdminLayout>} />
+          <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
+          <Route path="/admin/stats" element={<AdminLayout><AdminStats /></AdminLayout>} />
 
           <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>

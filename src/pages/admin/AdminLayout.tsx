@@ -3,8 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
 import {
   LayoutDashboard, BedDouble, CalendarDays, BookOpen,
-  LogOut, ChevronLeft, Settings, BarChart3, Image,
-  Menu, X,
+  LogOut, ChevronLeft, Settings, BarChart3,
+  Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

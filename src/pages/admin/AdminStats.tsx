@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, Users, Euro, CalendarDays } from "lucide-react";
+import { BarChart3, Euro } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { de } from "date-fns/locale";
 

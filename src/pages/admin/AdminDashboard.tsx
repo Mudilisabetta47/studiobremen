@@ -7,7 +7,7 @@ import {
   ArrowUpRight, Clock, CheckCircle2, XCircle, AlertCircle,
   Euro, BarChart3,
 } from "lucide-react";
-import { format, subDays, isAfter, parseISO } from "date-fns";
+import { format, subDays, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import type { Tables } from "@/integrations/supabase/types";
 
