@@ -1,12 +1,28 @@
 import { motion } from "framer-motion";
 import RoomCard from "@/components/RoomCard";
 import BookingWidget from "@/components/BookingWidget";
-import { rooms } from "@/data/rooms";
+import { useRooms } from "@/hooks/useRooms";
+import { rooms as staticRooms } from "@/data/rooms";
+import { Loader2 } from "lucide-react";
 
 const Rooms = () => {
+  const { data: dbRooms, isLoading } = useRooms();
+
+  // Map DB rooms to RoomCard props, fallback to static if DB empty
+  const displayRooms = dbRooms && dbRooms.length > 0
+    ? dbRooms.map((r) => ({
+        id: r.slug,
+        title: r.title,
+        description: r.description ?? "",
+        price: r.price_per_night,
+        image: r.primary_image ?? "/placeholder.svg",
+        guests: r.max_guests,
+        size: r.size ?? "",
+      }))
+    : staticRooms;
+
   return (
     <main className="pt-20">
-      {/* Header */}
       <section className="bg-gradient-hotel py-20">
         <div className="container mx-auto px-4 text-center">
           <motion.div
@@ -25,18 +41,22 @@ const Rooms = () => {
         </div>
       </section>
 
-      {/* Booking Widget */}
       <section className="container mx-auto px-4 -mt-8 relative z-10 mb-16">
         <BookingWidget />
       </section>
 
-      {/* Room Grid */}
       <section className="container mx-auto px-4 pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {rooms.map((room, index) => (
-            <RoomCard key={room.id} {...room} index={index} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin text-accent" size={32} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayRooms.map((room, index) => (
+              <RoomCard key={room.id} {...room} index={index} />
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );

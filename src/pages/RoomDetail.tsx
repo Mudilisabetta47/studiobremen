@@ -1,13 +1,42 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, Maximize2, Check } from "lucide-react";
+import { ArrowLeft, Users, Maximize2, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookingForm from "@/components/BookingForm";
-import { rooms } from "@/data/rooms";
+import { useRoom } from "@/hooks/useRooms";
+import { rooms as staticRooms } from "@/data/rooms";
 
 const RoomDetail = () => {
   const { id } = useParams();
-  const room = rooms.find((r) => r.id === id);
+  const { data: dbRoom, isLoading } = useRoom(id);
+
+  // Fallback to static data
+  const staticRoom = staticRooms.find((r) => r.id === id);
+
+  const room = dbRoom
+    ? {
+        id: dbRoom.slug,
+        title: dbRoom.title,
+        description: dbRoom.description ?? "",
+        longDescription: dbRoom.long_description ?? "",
+        price: dbRoom.price_per_night,
+        image: dbRoom.primary_image ?? "/placeholder.svg",
+        guests: dbRoom.max_guests,
+        size: dbRoom.size ?? "",
+        amenities: dbRoom.amenities ?? [],
+        dbId: dbRoom.id,
+      }
+    : staticRoom
+    ? { ...staticRoom, dbId: staticRoom.id }
+    : null;
+
+  if (isLoading) {
+    return (
+      <main className="pt-20 min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-accent" size={32} />
+      </main>
+    );
+  }
 
   if (!room) {
     return (
@@ -24,7 +53,6 @@ const RoomDetail = () => {
 
   return (
     <main className="pt-20">
-      {/* Hero Image */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         <img src={room.image} alt={room.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-primary/40" />
@@ -40,10 +68,8 @@ const RoomDetail = () => {
         </div>
       </section>
 
-      {/* Content */}
       <section className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Details */}
           <div className="lg:col-span-2">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
               <div className="flex items-center gap-6 mb-8 text-sm text-muted-foreground">
@@ -66,11 +92,10 @@ const RoomDetail = () => {
             </motion.div>
           </div>
 
-          {/* Booking Form */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
             <div className="sticky top-24">
               <BookingForm
-                roomId={room.id}
+                roomId={room.dbId}
                 roomTitle={room.title}
                 pricePerNight={room.price}
                 maxGuests={room.guests}
