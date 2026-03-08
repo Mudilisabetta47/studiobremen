@@ -2,20 +2,33 @@ import { motion } from "framer-motion";
 import HeroSection from "@/components/HeroSection";
 import BookingWidget from "@/components/BookingWidget";
 import RoomCard from "@/components/RoomCard";
-import { rooms } from "@/data/rooms";
-import { Star } from "lucide-react";
+import { useRooms } from "@/hooks/useRooms";
+import { rooms as staticRooms } from "@/data/rooms";
+import { Star, Loader2 } from "lucide-react";
 
 const Index = () => {
+  const { data: dbRooms, isLoading } = useRooms();
+
+  const displayRooms = dbRooms && dbRooms.length > 0
+    ? dbRooms.map((r) => ({
+        id: r.slug,
+        title: r.title,
+        description: r.description ?? "",
+        price: r.price_per_night,
+        image: r.primary_image ?? "/placeholder.svg",
+        guests: r.max_guests,
+        size: r.size ?? "",
+      }))
+    : staticRooms;
+
   return (
     <main>
       <HeroSection />
 
-      {/* Booking Widget */}
       <section className="container mx-auto px-4 -mt-16 relative z-20">
         <BookingWidget />
       </section>
 
-      {/* Intro */}
       <section className="container mx-auto px-4 py-24 text-center max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -34,7 +47,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Rooms Preview */}
       <section className="bg-secondary/50 py-24">
         <div className="container mx-auto px-4">
           <motion.div
@@ -49,15 +61,20 @@ const Index = () => {
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {rooms.map((room, index) => (
-              <RoomCard key={room.id} {...room} index={index} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="animate-spin text-accent" size={32} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {displayRooms.map((room, index) => (
+                <RoomCard key={room.id} {...room} index={index} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Testimonial */}
       <section className="py-24">
         <div className="container mx-auto px-4 max-w-2xl text-center">
           <motion.div
