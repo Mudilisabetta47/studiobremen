@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  BedDouble, BookOpen, Users, TrendingUp, CalendarDays,
+  BedDouble, BookOpen, Users, CalendarDays,
   ArrowUpRight, Clock, CheckCircle2, XCircle, AlertCircle,
   Euro, BarChart3,
 } from "lucide-react";
