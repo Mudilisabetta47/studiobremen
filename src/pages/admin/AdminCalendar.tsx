@@ -1,9 +1,11 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isWithinInterval, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isWithinInterval, parseISO, isToday, isWeekend } from "date-fns";
 import { de } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Booking = Tables<"bookings"> & { rooms: { title: string } | null };
@@ -33,63 +35,88 @@ const AdminCalendar = () => {
   }), [currentMonth]);
 
   const getBookingsForRoomAndDay = (roomId: string, day: Date) => {
-    return bookings.filter((b) => {
+    return bookings.filter(b => {
       if (b.room_id !== roomId) return false;
-      const checkIn = parseISO(b.check_in);
-      const checkOut = parseISO(b.check_out);
-      return isWithinInterval(day, { start: checkIn, end: checkOut });
+      return isWithinInterval(day, { start: parseISO(b.check_in), end: parseISO(b.check_out) });
     });
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-3xl font-bold text-foreground">Verfügbarkeitskalender</h1>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-            <ChevronLeft size={16} />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">Verfügbarkeitskalender</h1>
+          <p className="font-body text-sm text-muted-foreground mt-0.5">{rooms.length} aktive Zimmer</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+            <ChevronLeft size={15} />
           </Button>
-          <span className="font-display text-lg font-semibold text-foreground min-w-[160px] text-center">
+          <div className="font-display text-sm font-semibold text-foreground min-w-[140px] text-center px-3 py-1.5 bg-card border border-border/60 rounded-lg">
             {format(currentMonth, "MMMM yyyy", { locale: de })}
-          </span>
-          <Button variant="outline" size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-            <ChevronRight size={16} />
+          </div>
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+            <ChevronRight size={15} />
           </Button>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-lg overflow-x-auto">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+        className="bg-card border border-border/60 rounded-xl overflow-x-auto shadow-sm">
         <table className="w-full min-w-[800px]">
           <thead>
-            <tr className="border-b border-border">
-              <th className="p-3 text-left text-xs font-body uppercase tracking-wider text-muted-foreground sticky left-0 bg-card z-10 min-w-[140px]">
+            <tr className="border-b border-border/50">
+              <th className="p-3 text-left text-[10px] font-body font-semibold uppercase tracking-wider text-muted-foreground sticky left-0 bg-card z-10 min-w-[130px]">
                 Zimmer
               </th>
-              {days.map((day) => (
-                <th key={day.toISOString()} className="p-1 text-center text-xs font-body text-muted-foreground min-w-[36px]">
-                  <div>{format(day, "dd")}</div>
-                  <div className="text-[10px]">{format(day, "EEE", { locale: de })}</div>
-                </th>
-              ))}
+              {days.map(day => {
+                const today = isToday(day);
+                const weekend = isWeekend(day);
+                return (
+                  <th key={day.toISOString()} className={cn(
+                    "p-1 text-center min-w-[32px]",
+                    today && "bg-accent/10",
+                    weekend && !today && "bg-muted/30"
+                  )}>
+                    <div className={cn(
+                      "text-[10px] font-body font-medium",
+                      today ? "text-accent" : "text-muted-foreground"
+                    )}>{format(day, "dd")}</div>
+                    <div className={cn(
+                      "text-[9px] font-body",
+                      today ? "text-accent/70" : "text-muted-foreground/60"
+                    )}>{format(day, "EE", { locale: de })}</div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {rooms.map((room) => (
-              <tr key={room.id} className="border-b border-border last:border-0">
-                <td className="p-3 font-body font-medium text-foreground text-sm sticky left-0 bg-card z-10">
+            {rooms.map(room => (
+              <tr key={room.id} className="border-b border-border/30 last:border-0 group">
+                <td className="p-3 font-body font-medium text-foreground text-xs sticky left-0 bg-card z-10 group-hover:bg-muted/20 transition-colors">
                   {room.title}
                 </td>
-                {days.map((day) => {
+                {days.map(day => {
                   const dayBookings = getBookingsForRoomAndDay(room.id, day);
                   const isBooked = dayBookings.length > 0;
+                  const today = isToday(day);
                   return (
                     <td
                       key={day.toISOString()}
-                      className={`p-1 text-center ${isBooked ? "bg-destructive/20" : "bg-green-50"}`}
-                      title={isBooked ? dayBookings.map((b) => b.guest_name).join(", ") : "Verfügbar"}
+                      className={cn(
+                        "p-0.5 text-center transition-colors",
+                        today && "bg-accent/5",
+                      )}
+                      title={isBooked ? dayBookings.map(b => b.guest_name).join(", ") : "Verfügbar"}
                     >
-                      <div className={`w-6 h-6 rounded-sm mx-auto flex items-center justify-center text-[10px] font-body ${isBooked ? "bg-destructive/30 text-destructive" : "text-green-600"}`}>
-                        {isBooked ? "●" : "○"}
+                      <div className={cn(
+                        "w-full h-7 rounded-[4px] flex items-center justify-center text-[10px] font-body transition-all",
+                        isBooked
+                          ? "bg-destructive/15 text-destructive hover:bg-destructive/25"
+                          : "bg-emerald-500/8 text-emerald-600/50 hover:bg-emerald-500/15"
+                      )}>
+                        {isBooked ? "●" : ""}
                       </div>
                     </td>
                   );
@@ -98,11 +125,18 @@ const AdminCalendar = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </motion.div>
 
-      <div className="flex items-center gap-6 mt-4 text-xs font-body text-muted-foreground">
-        <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-green-50 border border-green-200"></span> Verfügbar</span>
-        <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-destructive/20 border border-destructive/30"></span> Gebucht</span>
+      <div className="flex items-center gap-5 text-[11px] font-body text-muted-foreground">
+        <span className="flex items-center gap-2">
+          <span className="w-3.5 h-3.5 rounded bg-emerald-500/10 border border-emerald-500/20" /> Verfügbar
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="w-3.5 h-3.5 rounded bg-destructive/15 border border-destructive/20" /> Gebucht
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="w-3.5 h-3.5 rounded bg-accent/10 border border-accent/20" /> Heute
+        </span>
       </div>
     </div>
   );
