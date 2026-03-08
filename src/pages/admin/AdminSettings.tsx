@@ -5,17 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Globe, Bell, Shield, Palette, CreditCard, Link2, Save,
+  Globe, Bell, Shield, Palette, CreditCard, Link2, Save, Check,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const AdminSettings = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("general");
   const [saving, setSaving] = useState(false);
 
-  // General settings state
   const [settings, setSettings] = useState({
-    hotelName: "Hotel Bremen",
+    hotelName: "Studio Bremen",
     email: "info@mep-agentur.de",
     phone: "",
     address: "Bremen, Deutschland",
@@ -34,7 +34,6 @@ const AdminSettings = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    // Settings would be stored in a settings table - for now just show toast
     await new Promise(r => setTimeout(r, 500));
     toast({ title: "Einstellungen gespeichert" });
     setSaving(false);
@@ -49,28 +48,39 @@ const AdminSettings = () => {
     { id: "security", label: "Sicherheit", icon: Shield },
   ];
 
+  const SettingsToggle = ({ label, desc, checked, onChange }: { label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }) => (
+    <div className="flex items-center justify-between p-4 bg-muted/20 border border-border/40 rounded-xl hover:bg-muted/30 transition-colors">
+      <div>
+        <p className="font-body font-medium text-sm text-foreground">{label}</p>
+        <p className="text-[11px] text-muted-foreground font-body mt-0.5">{desc}</p>
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">Einstellungen</h1>
-        <p className="font-body text-muted-foreground mt-1">Hotel- und Systemkonfiguration</p>
+        <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">Einstellungen</h1>
+        <p className="font-body text-sm text-muted-foreground mt-0.5">Hotel- und Systemkonfiguration</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Tab Navigation */}
-        <nav className="lg:w-56 flex-shrink-0">
-          <div className="bg-card border border-border rounded-xl p-2 space-y-1">
+      <div className="flex flex-col lg:flex-row gap-5">
+        {/* Tabs */}
+        <nav className="lg:w-52 flex-shrink-0">
+          <div className="bg-card border border-border/60 rounded-xl p-1.5 space-y-0.5">
             {tabs.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-body transition-colors text-left ${
+                className={cn(
+                  "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-body transition-all text-left relative",
                   activeTab === id
-                    ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
+                    ? "bg-accent text-accent-foreground font-medium shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                )}
               >
-                <Icon size={16} />
+                <Icon size={15} />
                 {label}
               </button>
             ))}
@@ -80,117 +90,103 @@ const AdminSettings = () => {
         {/* Content */}
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, x: 10 }}
+          initial={{ opacity: 0, x: 6 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex-1 bg-card border border-border rounded-xl p-6"
+          transition={{ duration: 0.2 }}
+          className="flex-1 bg-card border border-border/60 rounded-xl p-6"
         >
           {activeTab === "general" && (
-            <div className="space-y-6">
-              <h2 className="font-display text-xl font-semibold text-foreground">Allgemeine Einstellungen</h2>
+            <div className="space-y-5">
+              <h2 className="font-display text-lg font-semibold text-foreground">Allgemeine Einstellungen</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Hotelname</label>
-                  <Input value={settings.hotelName} onChange={e => setSettings({ ...settings, hotelName: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">E-Mail</label>
-                  <Input value={settings.email} onChange={e => setSettings({ ...settings, email: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Telefon</label>
-                  <Input value={settings.phone} onChange={e => setSettings({ ...settings, phone: e.target.value })} placeholder="+49 ..." />
-                </div>
-                <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Adresse</label>
-                  <Input value={settings.address} onChange={e => setSettings({ ...settings, address: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Währung</label>
-                  <Input value={settings.currency} onChange={e => setSettings({ ...settings, currency: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Zeitzone</label>
-                  <Input value={settings.timezone} onChange={e => setSettings({ ...settings, timezone: e.target.value })} />
-                </div>
+                {[
+                  { label: "Hotelname", key: "hotelName" as const },
+                  { label: "E-Mail", key: "email" as const },
+                  { label: "Telefon", key: "phone" as const, placeholder: "+49 ..." },
+                  { label: "Adresse", key: "address" as const },
+                  { label: "Währung", key: "currency" as const },
+                  { label: "Zeitzone", key: "timezone" as const },
+                ].map(({ label, key, placeholder }) => (
+                  <div key={key}>
+                    <label className="text-[10px] font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">{label}</label>
+                    <Input value={settings[key]} onChange={e => setSettings({ ...settings, [key]: e.target.value })} placeholder={placeholder} />
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {activeTab === "booking" && (
-            <div className="space-y-6">
-              <h2 className="font-display text-xl font-semibold text-foreground">Buchungseinstellungen</h2>
+            <div className="space-y-5">
+              <h2 className="font-display text-lg font-semibold text-foreground">Buchungseinstellungen</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Check-in Zeit</label>
+                  <label className="text-[10px] font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Check-in Zeit</label>
                   <Input type="time" value={settings.checkInTime} onChange={e => setSettings({ ...settings, checkInTime: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Check-out Zeit</label>
+                  <label className="text-[10px] font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Check-out Zeit</label>
                   <Input type="time" value={settings.checkOutTime} onChange={e => setSettings({ ...settings, checkOutTime: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Max. Vorlaufzeit (Tage)</label>
+                  <label className="text-[10px] font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Max. Vorlaufzeit (Tage)</label>
                   <Input type="number" value={settings.maxAdvanceBookingDays} onChange={e => setSettings({ ...settings, maxAdvanceBookingDays: Number(e.target.value) })} />
                 </div>
                 <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Mindestaufenthalt (Nächte)</label>
+                  <label className="text-[10px] font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Mindestaufenthalt (Nächte)</label>
                   <Input type="number" min={1} value={settings.minStay} onChange={e => setSettings({ ...settings, minStay: Number(e.target.value) })} />
                 </div>
-                <div>
-                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Stornierungsfrist (Stunden)</label>
+                <div className="md:col-span-2">
+                  <label className="text-[10px] font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Stornierungsfrist (Stunden)</label>
                   <Input type="number" value={settings.cancellationHours} onChange={e => setSettings({ ...settings, cancellationHours: Number(e.target.value) })} />
                 </div>
               </div>
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                <div>
-                  <p className="font-body font-medium text-sm text-foreground">Automatische Bestätigung</p>
-                  <p className="text-xs text-muted-foreground font-body">Buchungen automatisch bestätigen</p>
-                </div>
-                <Switch checked={settings.autoConfirm} onCheckedChange={v => setSettings({ ...settings, autoConfirm: v })} />
-              </div>
+              <SettingsToggle
+                label="Automatische Bestätigung"
+                desc="Buchungen automatisch bestätigen ohne manuelle Prüfung"
+                checked={settings.autoConfirm}
+                onChange={v => setSettings({ ...settings, autoConfirm: v })}
+              />
             </div>
           )}
 
           {activeTab === "notifications" && (
-            <div className="space-y-6">
-              <h2 className="font-display text-xl font-semibold text-foreground">Benachrichtigungen</h2>
+            <div className="space-y-5">
+              <h2 className="font-display text-lg font-semibold text-foreground">Benachrichtigungen</h2>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                  <div>
-                    <p className="font-body font-medium text-sm text-foreground">E-Mail-Benachrichtigungen</p>
-                    <p className="text-xs text-muted-foreground font-body">Benachrichtigungen per E-Mail erhalten</p>
-                  </div>
-                  <Switch checked={settings.emailNotifications} onCheckedChange={v => setSettings({ ...settings, emailNotifications: v })} />
-                </div>
-                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                  <div>
-                    <p className="font-body font-medium text-sm text-foreground">Buchungs-Alerts</p>
-                    <p className="text-xs text-muted-foreground font-body">Sofortige Benachrichtigung bei neuen Buchungen</p>
-                  </div>
-                  <Switch checked={settings.bookingNotifications} onCheckedChange={v => setSettings({ ...settings, bookingNotifications: v })} />
-                </div>
+                <SettingsToggle
+                  label="E-Mail-Benachrichtigungen"
+                  desc="Benachrichtigungen per E-Mail erhalten"
+                  checked={settings.emailNotifications}
+                  onChange={v => setSettings({ ...settings, emailNotifications: v })}
+                />
+                <SettingsToggle
+                  label="Buchungs-Alerts"
+                  desc="Sofortige Benachrichtigung bei neuen Buchungen"
+                  checked={settings.bookingNotifications}
+                  onChange={v => setSettings({ ...settings, bookingNotifications: v })}
+                />
               </div>
             </div>
           )}
 
           {activeTab === "integrations" && (
-            <div className="space-y-6">
-              <h2 className="font-display text-xl font-semibold text-foreground">Integrationen</h2>
-              <div className="space-y-4">
-                <div className="p-5 border border-border rounded-xl">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-accent/10 text-accent"><Link2 size={20} /></div>
-                      <div>
-                        <p className="font-body font-medium text-foreground">Smoobu Channel Manager</p>
-                        <p className="text-xs text-muted-foreground font-body">Synchronisation von Buchungen und Verfügbarkeit</p>
-                      </div>
+            <div className="space-y-5">
+              <h2 className="font-display text-lg font-semibold text-foreground">Integrationen</h2>
+              <div className="border border-border/60 rounded-xl overflow-hidden">
+                <div className="p-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-accent/10 text-accent"><Link2 size={18} /></div>
+                    <div>
+                      <p className="font-body font-medium text-sm text-foreground">Smoobu Channel Manager</p>
+                      <p className="text-[11px] text-muted-foreground font-body">Buchungen & Verfügbarkeit synchronisieren</p>
                     </div>
-                    <Switch checked={settings.smoobuSync} onCheckedChange={v => setSettings({ ...settings, smoobuSync: v })} />
                   </div>
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-xs font-body text-green-700">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    Verbunden – Webhook aktiv
+                  <Switch checked={settings.smoobuSync} onCheckedChange={v => setSettings({ ...settings, smoobuSync: v })} />
+                </div>
+                <div className="px-5 pb-4">
+                  <div className="flex items-center gap-2 text-[11px] font-body text-emerald-600 bg-emerald-500/8 border border-emerald-500/15 rounded-lg px-3 py-2">
+                    <Check size={13} /> Verbunden – Webhook aktiv
                   </div>
                 </div>
               </div>
@@ -198,38 +194,44 @@ const AdminSettings = () => {
           )}
 
           {activeTab === "appearance" && (
-            <div className="space-y-6">
-              <h2 className="font-display text-xl font-semibold text-foreground">Darstellung</h2>
-              <p className="text-sm text-muted-foreground font-body">
-                Anpassungen am Design der öffentlichen Website können über die Zimmer- und Seitenverwaltung vorgenommen werden.
-              </p>
+            <div className="space-y-5">
+              <h2 className="font-display text-lg font-semibold text-foreground">Darstellung</h2>
+              <div className="bg-muted/20 border border-border/40 rounded-xl p-6 text-center">
+                <Palette size={24} className="mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-sm text-muted-foreground font-body">
+                  Designanpassungen können über die Zimmer- und Seitenverwaltung vorgenommen werden.
+                </p>
+              </div>
             </div>
           )}
 
           {activeTab === "security" && (
-            <div className="space-y-6">
-              <h2 className="font-display text-xl font-semibold text-foreground">Sicherheit</h2>
-              <div className="space-y-3">
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <p className="font-body font-medium text-sm text-foreground">Passwort ändern</p>
-                  <p className="text-xs text-muted-foreground font-body mb-3">Aktualisieren Sie Ihr Admin-Passwort</p>
+            <div className="space-y-5">
+              <h2 className="font-display text-lg font-semibold text-foreground">Sicherheit</h2>
+              <div className="bg-muted/20 border border-border/40 rounded-xl p-5 space-y-4">
+                <div>
+                  <p className="font-body font-medium text-sm text-foreground mb-0.5">Passwort ändern</p>
+                  <p className="text-[11px] text-muted-foreground font-body mb-3">Aktualisieren Sie Ihr Admin-Passwort</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input type="password" placeholder="Neues Passwort" />
                     <Input type="password" placeholder="Passwort bestätigen" />
                   </div>
                 </div>
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <p className="font-body font-medium text-sm text-foreground">Aktive Sitzungen</p>
-                  <p className="text-xs text-muted-foreground font-body">Derzeit angemeldet als admin</p>
+              </div>
+              <div className="bg-muted/20 border border-border/40 rounded-xl p-5">
+                <p className="font-body font-medium text-sm text-foreground">Aktive Sitzungen</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <p className="text-[11px] text-muted-foreground font-body">Derzeit angemeldet als Admin</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Save Button */}
-          <div className="mt-8 pt-6 border-t border-border flex justify-end">
-            <Button variant="hero" onClick={handleSave} disabled={saving} className="gap-2">
-              <Save size={16} />
+          {/* Save */}
+          <div className="mt-8 pt-5 border-t border-border/40 flex justify-end">
+            <Button variant="hero" onClick={handleSave} disabled={saving} className="gap-2 shadow-md shadow-accent/10">
+              <Save size={14} />
               {saving ? "Speichern..." : "Einstellungen speichern"}
             </Button>
           </div>

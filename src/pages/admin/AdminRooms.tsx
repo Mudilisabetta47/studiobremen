@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, BedDouble, ImageIcon } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -21,14 +19,8 @@ const AdminRooms = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [form, setForm] = useState({
-    title: "",
-    slug: "",
-    description: "",
-    long_description: "",
-    price_per_night: 0,
-    max_guests: 2,
-    size: "",
-    amenities: "",
+    title: "", slug: "", description: "", long_description: "",
+    price_per_night: 0, max_guests: 2, size: "", amenities: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -51,13 +43,9 @@ const AdminRooms = () => {
   const openEdit = (room: Room) => {
     setEditingRoom(room);
     setForm({
-      title: room.title,
-      slug: room.slug,
-      description: room.description ?? "",
-      long_description: room.long_description ?? "",
-      price_per_night: room.price_per_night,
-      max_guests: room.max_guests,
-      size: room.size ?? "",
+      title: room.title, slug: room.slug, description: room.description ?? "",
+      long_description: room.long_description ?? "", price_per_night: room.price_per_night,
+      max_guests: room.max_guests, size: room.size ?? "",
       amenities: (room.amenities ?? []).join(", "),
     });
     setImageFile(null);
@@ -65,16 +53,13 @@ const AdminRooms = () => {
   };
 
   const handleSave = async () => {
-    const amenitiesArr = form.amenities.split(",").map((a) => a.trim()).filter(Boolean);
+    const amenitiesArr = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
     const payload = {
       title: form.title,
       slug: form.slug || form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-      description: form.description,
-      long_description: form.long_description,
-      price_per_night: form.price_per_night,
-      max_guests: form.max_guests,
-      size: form.size,
-      amenities: amenitiesArr,
+      description: form.description, long_description: form.long_description,
+      price_per_night: form.price_per_night, max_guests: form.max_guests,
+      size: form.size, amenities: amenitiesArr,
     };
 
     let roomId = editingRoom?.id;
@@ -88,7 +73,6 @@ const AdminRooms = () => {
       roomId = data.id;
     }
 
-    // Upload image
     if (imageFile && roomId) {
       const ext = imageFile.name.split(".").pop();
       const path = `${roomId}/${Date.now()}.${ext}`;
@@ -96,10 +80,7 @@ const AdminRooms = () => {
       if (!uploadError) {
         const { data: urlData } = supabase.storage.from("room-images").getPublicUrl(path);
         await supabase.from("room_images").insert({
-          room_id: roomId,
-          image_url: urlData.publicUrl,
-          is_primary: true,
-          alt_text: form.title,
+          room_id: roomId, image_url: urlData.publicUrl, is_primary: true, alt_text: form.title,
         });
       }
     }
@@ -117,61 +98,66 @@ const AdminRooms = () => {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-3xl font-bold text-foreground">Zimmerverwaltung</h1>
-        <Button variant="hero" onClick={openCreate} className="gap-2">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">Zimmerverwaltung</h1>
+          <p className="font-body text-sm text-muted-foreground mt-0.5">{rooms.length} Zimmer insgesamt</p>
+        </div>
+        <Button variant="hero" onClick={openCreate} className="gap-2 shadow-md shadow-accent/10">
           <Plus size={16} /> Neues Zimmer
         </Button>
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground font-body">Laden...</p>
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted/40 animate-pulse rounded-xl" />)}
+        </div>
+      ) : rooms.length === 0 ? (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="bg-card border border-border/60 rounded-xl p-12 text-center">
+          <BedDouble size={32} className="mx-auto text-muted-foreground/30 mb-3" />
+          <p className="text-muted-foreground font-body">Noch keine Zimmer vorhanden</p>
+          <Button variant="hero" onClick={openCreate} className="mt-4 gap-2">
+            <Plus size={16} /> Erstes Zimmer erstellen
+          </Button>
+        </motion.div>
       ) : (
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-left p-4 text-xs font-body uppercase tracking-wider text-muted-foreground">Zimmer</th>
-                <th className="text-left p-4 text-xs font-body uppercase tracking-wider text-muted-foreground">Preis</th>
-                <th className="text-left p-4 text-xs font-body uppercase tracking-wider text-muted-foreground">Gäste</th>
-                <th className="text-left p-4 text-xs font-body uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="text-right p-4 text-xs font-body uppercase tracking-wider text-muted-foreground">Aktionen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rooms.map((room) => (
-                <tr key={room.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="p-4">
-                    <p className="font-display font-semibold text-foreground">{room.title}</p>
-                    <p className="text-xs text-muted-foreground font-body">{room.size}</p>
-                  </td>
-                  <td className="p-4 font-body text-foreground">€{room.price_per_night}/Nacht</td>
-                  <td className="p-4 font-body text-foreground">{room.max_guests}</td>
-                  <td className="p-4">
-                    <span className={`text-xs px-2 py-1 rounded-full font-body ${room.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                      {room.is_active ? "Aktiv" : "Inaktiv"}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(room)}>
-                      <Pencil size={14} />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(room.id)} className="hover:text-destructive">
-                      <Trash2 size={14} />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {rooms.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground font-body">
-                    Noch keine Zimmer vorhanden
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="space-y-2">
+          {rooms.map((room, i) => (
+            <motion.div
+              key={room.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="bg-card border border-border/60 rounded-xl p-4 flex items-center gap-4 hover:shadow-md hover:border-accent/20 transition-all group"
+            >
+              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <BedDouble size={20} className="text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display font-semibold text-foreground text-[15px]">{room.title}</p>
+                <p className="text-xs text-muted-foreground font-body mt-0.5">
+                  {room.size} · max. {room.max_guests} Gäste · €{room.price_per_night}/Nacht
+                </p>
+              </div>
+              <span className={`text-[10px] px-2.5 py-1 rounded-full font-body font-medium ${
+                room.is_active
+                  ? "bg-emerald-500/10 text-emerald-600"
+                  : "bg-destructive/10 text-destructive"
+              }`}>
+                {room.is_active ? "Aktiv" : "Inaktiv"}
+              </span>
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="sm" onClick={() => openEdit(room)} className="h-8 w-8 p-0 hover:bg-accent/10 hover:text-accent">
+                  <Pencil size={14} />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(room.id)} className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive">
+                  <Trash2 size={14} />
+                </Button>
+              </div>
+            </motion.div>
+          ))}
         </div>
       )}
 
@@ -185,47 +171,54 @@ const AdminRooms = () => {
           <div className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Titel</label>
-                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Titel</label>
+                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Slug</label>
-                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="auto-generated" />
+                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Slug</label>
+                <Input value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} placeholder="auto-generated" />
               </div>
             </div>
             <div>
-              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Kurzbeschreibung</label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
+              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Kurzbeschreibung</label>
+              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} />
             </div>
             <div>
-              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Ausführliche Beschreibung</label>
-              <Textarea value={form.long_description} onChange={(e) => setForm({ ...form, long_description: e.target.value })} rows={4} />
+              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Ausführliche Beschreibung</label>
+              <Textarea value={form.long_description} onChange={e => setForm({ ...form, long_description: e.target.value })} rows={4} />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Preis/Nacht (€)</label>
-                <Input type="number" value={form.price_per_night} onChange={(e) => setForm({ ...form, price_per_night: Number(e.target.value) })} />
+                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Preis/Nacht (€)</label>
+                <Input type="number" value={form.price_per_night} onChange={e => setForm({ ...form, price_per_night: Number(e.target.value) })} />
               </div>
               <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Max. Gäste</label>
-                <Input type="number" value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} />
+                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Max. Gäste</label>
+                <Input type="number" value={form.max_guests} onChange={e => setForm({ ...form, max_guests: Number(e.target.value) })} />
               </div>
               <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Größe</label>
-                <Input value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} placeholder="z.B. 28 m²" />
+                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Größe</label>
+                <Input value={form.size} onChange={e => setForm({ ...form, size: e.target.value })} placeholder="z.B. 28 m²" />
               </div>
             </div>
             <div>
-              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Ausstattung (kommagetrennt)</label>
-              <Input value={form.amenities} onChange={(e) => setForm({ ...form, amenities: e.target.value })} placeholder="WLAN, Minibar, Safe" />
+              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Ausstattung (kommagetrennt)</label>
+              <Input value={form.amenities} onChange={e => setForm({ ...form, amenities: e.target.value })} placeholder="WLAN, Minibar, Safe" />
             </div>
             <div>
-              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1 block">Bild hochladen</label>
-              <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Bild hochladen</label>
+              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-accent/30 transition-colors cursor-pointer"
+                onClick={() => document.getElementById("room-image-input")?.click()}>
+                <ImageIcon size={24} className="mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-xs text-muted-foreground font-body">
+                  {imageFile ? imageFile.name : "Klicken zum Hochladen"}
+                </p>
+              </div>
+              <input id="room-image-input" type="file" accept="image/*" className="hidden" onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
             </div>
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Abbrechen</Button>
-              <Button variant="hero" onClick={handleSave}>Speichern</Button>
+              <Button variant="hero" onClick={handleSave} className="shadow-md shadow-accent/10">Speichern</Button>
             </div>
           </div>
         </DialogContent>
