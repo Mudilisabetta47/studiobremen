@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, QrCode, Copy, Mail, Download, Check } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import type { Tables, Enums } from "@/integrations/supabase/types";
 
 type Booking = Tables<"bookings">;
@@ -213,42 +214,133 @@ const AdminBookings = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Detail Dialog */}
+      {/* Detail + QR Support Dialog */}
       <Dialog open={!!detailBooking} onOpenChange={() => setDetailBooking(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display text-xl">Buchungsdetails</DialogTitle>
           </DialogHeader>
           {detailBooking && (
-            <div className="space-y-3 mt-4 font-body text-sm">
-              <div className="grid grid-cols-2 gap-2">
-                <p className="text-muted-foreground">Gast:</p>
-                <p className="text-foreground font-medium">{detailBooking.guest_name}</p>
-                <p className="text-muted-foreground">E-Mail:</p>
-                <p className="text-foreground">{detailBooking.guest_email}</p>
-                <p className="text-muted-foreground">Telefon:</p>
-                <p className="text-foreground">{detailBooking.guest_phone || "–"}</p>
-                <p className="text-muted-foreground">Zimmer:</p>
-                <p className="text-foreground">{detailBooking.rooms?.title ?? "–"}</p>
-                <p className="text-muted-foreground">Zeitraum:</p>
-                <p className="text-foreground">{detailBooking.check_in} → {detailBooking.check_out}</p>
-                <p className="text-muted-foreground">Gäste:</p>
-                <p className="text-foreground">{detailBooking.guests_count}</p>
-                <p className="text-muted-foreground">Status:</p>
-                <p className="text-foreground capitalize">{detailBooking.status}</p>
-                <p className="text-muted-foreground">Buchungs-ID:</p>
-                <p className="text-foreground text-xs">{detailBooking.id}</p>
-                {detailBooking.notes && (
-                  <>
-                    <p className="text-muted-foreground">Notizen:</p>
-                    <p className="text-foreground">{detailBooking.notes}</p>
-                  </>
-                )}
-              </div>
-            </div>
+            <DetailWithQR booking={detailBooking} toast={toast} />
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+};
+
+/* ── QR-Code Support Component ── */
+
+const DetailWithQR = ({ booking, toast }: { booking: Booking & { rooms: Room | null }; toast: any }) => {
+  const [copied, setCopied] = useState(false);
+
+  const qrPayload = booking.qr_code_data || JSON.stringify({
+    booking_id: booking.id,
+    guest: booking.guest_name,
+    room: booking.rooms?.title ?? "",
+    check_in: booking.check_in,
+    check_out: booking.check_out,
+  });
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(qrPayload);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({ title: "QR-Daten kopiert" });
+  };
+
+  const handleEmailSupport = () => {
+    const subject = encodeURIComponent(`Ihre Buchung – ${booking.rooms?.title ?? "Hotel"}`);
+    const body = encodeURIComponent(
+      `Sehr geehrte/r ${booking.guest_name},\n\nanbei Ihre Buchungsbestätigung:\n\n` +
+      `Zimmer: ${booking.rooms?.title ?? "–"}\n` +
+      `Anreise: ${booking.check_in}\n` +
+      `Abreise: ${booking.check_out}\n` +
+      `Gäste: ${booking.guests_count}\n` +
+      `Buchungs-ID: ${booking.id}\n\n` +
+      `Bitte zeigen Sie beim Check-in Ihren QR-Code vor.\n\nMit freundlichen Grüßen,\nIhr Hotel-Team`
+    );
+    window.open(`mailto:${booking.guest_email}?subject=${subject}&body=${body}`, "_blank");
+  };
+
+  const handleDownloadQR = () => {
+    const svg = document.getElementById("admin-qr-svg");
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 400;
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      ctx?.drawImage(img, 0, 0, 400, 400);
+      const link = document.createElement("a");
+      link.download = `qr-${booking.guest_name.replace(/\s+/g, "-")}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
+  return (
+    <div className="space-y-5 mt-4">
+      {/* Booking details */}
+      <div className="grid grid-cols-2 gap-2 font-body text-sm">
+        <p className="text-muted-foreground">Gast:</p>
+        <p className="text-foreground font-medium">{booking.guest_name}</p>
+        <p className="text-muted-foreground">E-Mail:</p>
+        <p className="text-foreground">{booking.guest_email}</p>
+        <p className="text-muted-foreground">Telefon:</p>
+        <p className="text-foreground">{booking.guest_phone || "–"}</p>
+        <p className="text-muted-foreground">Zimmer:</p>
+        <p className="text-foreground">{booking.rooms?.title ?? "–"}</p>
+        <p className="text-muted-foreground">Zeitraum:</p>
+        <p className="text-foreground">{booking.check_in} → {booking.check_out}</p>
+        <p className="text-muted-foreground">Gäste:</p>
+        <p className="text-foreground">{booking.guests_count}</p>
+        <p className="text-muted-foreground">Status:</p>
+        <p className="text-foreground capitalize">{booking.status}</p>
+        {booking.total_price && (
+          <>
+            <p className="text-muted-foreground">Preis:</p>
+            <p className="text-foreground font-semibold">€{booking.total_price}</p>
+          </>
+        )}
+        {booking.notes && (
+          <>
+            <p className="text-muted-foreground">Notizen:</p>
+            <p className="text-foreground">{booking.notes}</p>
+          </>
+        )}
+      </div>
+
+      {/* QR Code Support Section */}
+      <div className="border-t border-border pt-5">
+        <h4 className="font-display text-sm font-semibold mb-3 flex items-center gap-2">
+          <QrCode size={16} className="text-accent" />
+          QR-Code für Check-in
+        </h4>
+        <div className="flex gap-5 items-start">
+          <div className="bg-background p-3 rounded-lg border border-border shadow-sm">
+            <QRCodeSVG id="admin-qr-svg" value={qrPayload} size={140} />
+          </div>
+          <div className="flex-1 space-y-2">
+            <p className="text-xs font-body text-muted-foreground mb-3">
+              Falls der Gast seinen QR-Code nicht erhalten hat, können Sie diesen herunterladen oder per E-Mail erneut senden.
+            </p>
+            <Button variant="outline" size="sm" className="w-full gap-2 justify-start" onClick={handleDownloadQR}>
+              <Download size={14} /> QR-Code herunterladen
+            </Button>
+            <Button variant="outline" size="sm" className="w-full gap-2 justify-start" onClick={handleEmailSupport}>
+              <Mail size={14} /> Per E-Mail an Gast senden
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full gap-2 justify-start" onClick={handleCopy}>
+              {copied ? <Check size={14} className="text-accent" /> : <Copy size={14} />}
+              {copied ? "Kopiert!" : "QR-Daten kopieren"}
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
