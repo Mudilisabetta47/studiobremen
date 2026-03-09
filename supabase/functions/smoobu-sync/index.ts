@@ -46,8 +46,55 @@ Deno.serve(async (req) => {
     }
 
     // Create booking
-    if (action === "create-booking") {
-      const { apartment_id, check_in, check_out, guest_name, guest_email, guest_phone, guests_count, room_id, notes } = payload;
+    if (action === "create-booking" || action === "create-booking-sandbox") {
+      const {
+        apartment_id,
+        check_in,
+        check_out,
+        guest_name,
+        guest_email,
+        guest_phone,
+        guests_count,
+        room_id,
+        notes,
+        total_price,
+      } = payload;
+
+      if (action === "create-booking-sandbox") {
+        const { data: booking, error: sandboxError } = await supabase.from("bookings").insert({
+          room_id,
+          guest_name,
+          guest_email,
+          guest_phone: guest_phone || null,
+          check_in,
+          check_out,
+          guests_count: guests_count || 1,
+          notes: notes || "[SANDBOX] Testbuchung",
+          status: "confirmed",
+          total_price: total_price ?? null,
+          smoobu_reservation_id: `sandbox_${crypto.randomUUID().slice(0, 8)}`,
+          qr_code_data: JSON.stringify({
+            booking_id: "sandbox",
+            guest_name,
+            check_in,
+            check_out,
+            room_id,
+            sandbox: true,
+          }),
+        }).select().single();
+
+        if (sandboxError) {
+          return new Response(JSON.stringify({ success: false, error: sandboxError.message }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, sandbox: true, booking, smoobu_synced: false }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       // 1. Live availability check
       const availRes = await fetch(
@@ -104,6 +151,7 @@ Deno.serve(async (req) => {
         guests_count: guests_count || 1,
         notes: notes || null,
         status: smoobuReservationId ? "confirmed" : "pending",
+        total_price: total_price ?? null,
         smoobu_reservation_id: smoobuReservationId,
         qr_code_data: JSON.stringify({
           booking_id: "pending",

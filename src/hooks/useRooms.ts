@@ -17,15 +17,18 @@ async function fetchRooms(): Promise<DbRoom[]> {
 
   // Fetch primary images for all rooms
   const roomIds = (rooms ?? []).map((r) => r.id);
+
+  if (roomIds.length === 0) {
+    return [];
+  }
+
   const { data: images } = await supabase
     .from("room_images")
     .select("room_id, image_url")
     .in("room_id", roomIds)
     .eq("is_primary", true);
 
-  const imageMap = new Map(
-    (images ?? []).map((img) => [img.room_id, img.image_url])
-  );
+  const imageMap = new Map((images ?? []).map((img) => [img.room_id, img.image_url]));
 
   return (rooms ?? []).map((room) => ({
     ...room,
