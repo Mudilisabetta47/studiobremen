@@ -1,16 +1,36 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, Maximize2, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Shield, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import BookingForm from "@/components/BookingForm";
+import RoomGallery from "@/components/RoomGallery";
+import AmenityGroups from "@/components/AmenityGroups";
+import GuestReviews from "@/components/GuestReviews";
+import StickyBookingWidget from "@/components/StickyBookingWidget";
 import { useRoom } from "@/hooks/useRooms";
 import { rooms as staticRooms } from "@/data/rooms";
+
+// Atmospheric descriptions per room type
+const atmosphereTexts: Record<string, { headline: string; mood: string; highlight: string }> = {
+  "deluxe-zimmer": {
+    headline: "Wo Eleganz auf Geborgenheit trifft",
+    mood: "Tauchen Sie ein in eine Atmosphäre zeitloser Raffinesse. Warme Erdtöne, weiche Stoffe und gedämpftes Licht schaffen einen Rückzugsort, der zum Verweilen einlädt. Das sanfte Spiel von Licht und Schatten durch die bodentiefen Fenster verwandelt jeden Moment in ein Erlebnis.",
+    highlight: "Erwachen Sie mit dem goldenen Morgenlicht über den Dächern der Altstadt — ein Anblick, der jeden Tag besonders macht.",
+  },
+  "premium-suite": {
+    headline: "Grandeur trifft auf Intimität",
+    mood: "Die Premium Suite ist mehr als ein Zimmer — sie ist ein Versprechen. Marmor und edles Holz, durchdacht bis ins kleinste Detail. Hier verschmilzt die Großzügigkeit eines Salons mit der Wärme eines privaten Refugiums. Jeder Quadratmeter atmet Luxus.",
+    highlight: "Genießen Sie ein Bad in der freistehenden Wanne mit Blick auf die illuminierte Stadt — Ihr persönlicher Moment der Stille.",
+  },
+  "city-apartment": {
+    headline: "Ihr Zuhause in der Ferne",
+    mood: "Modern, durchdacht und voller Charakter — unser City Apartment verbindet die Freiheit einer eigenen Wohnung mit dem Komfort eines Boutique-Hotels. Helle Räume, klare Linien und natürliche Materialien schaffen eine Atmosphäre, die sofort vertraut wirkt.",
+    highlight: "Kochen Sie mit frischen Zutaten vom Markt und genießen Sie Ihren Kaffee am Fenster mit Blick auf das geschäftige Treiben der Stadt.",
+  },
+};
 
 const RoomDetail = () => {
   const { id } = useParams();
   const { data: dbRoom, isLoading } = useRoom(id);
-
-  // Fallback to static data
   const staticRoom = staticRooms.find((r) => r.id === id);
 
   const room = dbRoom
@@ -29,6 +49,11 @@ const RoomDetail = () => {
     : staticRoom
     ? { ...staticRoom, dbId: staticRoom.id }
     : null;
+
+  const atmosphere = atmosphereTexts[id ?? ""] ?? atmosphereTexts["deluxe-zimmer"];
+
+  // For gallery, use room image repeated as placeholder (real multi-image support from DB)
+  const galleryImages = room ? [room.image, room.image, room.image, room.image, room.image] : [];
 
   if (isLoading) {
     return (
@@ -53,57 +78,163 @@ const RoomDetail = () => {
 
   return (
     <main className="pt-20">
-      <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
-        <img src={room.image} alt={room.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-primary/40" />
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <div className="container mx-auto">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Link to="/zimmer" className="inline-flex items-center gap-2 text-primary-foreground/80 hover:text-accent transition-colors text-sm font-body mb-4">
-                <ArrowLeft size={16} /> Alle Zimmer
-              </Link>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-primary-foreground">{room.title}</h1>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4 py-4">
+        <nav className="flex items-center gap-2 text-sm font-body text-muted-foreground">
+          <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+          <span>/</span>
+          <Link to="/zimmer" className="hover:text-accent transition-colors">Zimmer</Link>
+          <span>/</span>
+          <span className="text-foreground font-medium">{room.title}</span>
+        </nav>
+      </div>
 
-      <section className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-              <div className="flex items-center gap-6 mb-8 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Users size={16} className="text-accent" /> Bis zu {room.guests} Gäste</span>
-                <span className="flex items-center gap-1.5"><Maximize2 size={16} className="text-accent" /> {room.size}</span>
+      {/* Gallery */}
+      <div className="container mx-auto px-4 mb-10">
+        <RoomGallery images={galleryImages} title={room.title} />
+      </div>
+
+      {/* Main Content + Sticky Widget */}
+      <div className="container mx-auto px-4 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Left Content */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* Title & Quick Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+                {room.title}
+              </h1>
+              <p className="font-body text-muted-foreground mb-5">{room.description}</p>
+
+              {/* Quick badges */}
+              <div className="flex flex-wrap gap-3 text-xs font-body">
+                <span className="bg-accent/10 text-accent px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <MapPin size={12} /> Zentrale Lage
+                </span>
+                <span className="bg-accent/10 text-accent px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <Shield size={12} /> Kostenlose Stornierung
+                </span>
+                <span className="bg-accent/10 text-accent px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <Clock size={12} /> Check-in ab 15:00
+                </span>
               </div>
+            </motion.div>
 
-              <h2 className="font-display text-2xl font-semibold mb-4">Beschreibung</h2>
-              <p className="font-body text-muted-foreground leading-relaxed mb-10">{room.longDescription}</p>
+            {/* Divider */}
+            <div className="border-t border-border" />
 
-              <h2 className="font-display text-2xl font-semibold mb-4">Ausstattung</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {room.amenities.map((amenity) => (
-                  <div key={amenity} className="flex items-center gap-2 text-sm font-body text-muted-foreground">
-                    <Check size={14} className="text-accent flex-shrink-0" />
-                    {amenity}
+            {/* Atmosphere Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2 className="font-display text-2xl font-semibold mb-2 text-foreground">
+                {atmosphere.headline}
+              </h2>
+              <p className="font-body text-muted-foreground leading-relaxed mb-6">
+                {atmosphere.mood}
+              </p>
+              <div className="bg-accent/5 border-l-4 border-accent rounded-r-lg p-5">
+                <p className="font-body text-sm italic text-foreground/80 leading-relaxed">
+                  {atmosphere.highlight}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Detailed Description */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2 className="font-display text-2xl font-semibold mb-4">Über dieses Zimmer</h2>
+              <p className="font-body text-muted-foreground leading-relaxed">
+                {room.longDescription}
+              </p>
+            </motion.div>
+
+            <div className="border-t border-border" />
+
+            {/* Amenity Groups */}
+            <div>
+              <h2 className="font-display text-2xl font-semibold mb-6">Ausstattung & Annehmlichkeiten</h2>
+              <AmenityGroups amenities={room.amenities} />
+            </div>
+
+            <div className="border-t border-border" />
+
+            {/* House Rules */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2 className="font-display text-2xl font-semibold mb-4">Gut zu wissen</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                {[
+                  { label: "Check-in", value: "Ab 15:00 Uhr" },
+                  { label: "Check-out", value: "Bis 11:00 Uhr" },
+                  { label: "Stornierung", value: "Kostenlos bis 48h vorher" },
+                ].map((item) => (
+                  <div key={item.label} className="bg-card border border-border rounded-lg p-4">
+                    <p className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1">{item.label}</p>
+                    <p className="font-display text-sm font-semibold">{item.value}</p>
                   </div>
                 ))}
               </div>
             </motion.div>
+
+            <div className="border-t border-border" />
+
+            {/* Reviews */}
+            <div>
+              <h2 className="font-display text-2xl font-semibold mb-6">Gästebewertungen</h2>
+              <GuestReviews />
+            </div>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
-            <div className="sticky top-24">
-              <BookingForm
-                roomId={room.dbId}
-                roomTitle={room.title}
-                pricePerNight={room.price}
-                maxGuests={room.guests}
-              />
-            </div>
-          </motion.div>
+          {/* Right Sticky Booking Widget */}
+          <div className="hidden lg:block">
+            <StickyBookingWidget
+              roomId={room.dbId}
+              roomTitle={room.title}
+              pricePerNight={room.price}
+              maxGuests={room.guests}
+              size={room.size}
+            />
+          </div>
         </div>
-      </section>
+
+        {/* Mobile fixed booking bar */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40 flex items-center justify-between">
+          <div>
+            <span className="font-display text-xl font-bold">€{room.price}</span>
+            <span className="text-sm font-body text-muted-foreground"> / Nacht</span>
+          </div>
+          <Button variant="hero" size="lg" asChild>
+            <a href="#booking-mobile">Jetzt buchen</a>
+          </Button>
+        </div>
+
+        {/* Mobile booking form */}
+        <div id="booking-mobile" className="lg:hidden mt-12">
+          <StickyBookingWidget
+            roomId={room.dbId}
+            roomTitle={room.title}
+            pricePerNight={room.price}
+            maxGuests={room.guests}
+            size={room.size}
+          />
+        </div>
+      </div>
     </main>
   );
 };
