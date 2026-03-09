@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, QrCode, Copy, Mail, Download, Check } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import type { Tables, Enums } from "@/integrations/supabase/types";
 
 type Booking = Tables<"bookings">;
