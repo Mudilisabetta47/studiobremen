@@ -51,6 +51,11 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
   const [qrData, setQrData] = useState<string | null>(null);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
 
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const isPreviewSession = !!searchParams?.has("__lovable_token");
+  const sandboxForced = searchParams?.get("sandbox") === "1";
+  const isSandboxMode = isPreviewSession || sandboxForced;
+
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -78,10 +83,12 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
       const checkInStr = format(values.check_in, "yyyy-MM-dd");
       const checkOutStr = format(values.check_out, "yyyy-MM-dd");
 
-      // Call smoobu-sync edge function to check availability and create booking
+      const action = isSandboxMode ? "create-booking-sandbox" : "create-booking";
+
+      // Call backend function to check availability and create booking
       const { data, error } = await supabase.functions.invoke("smoobu-sync", {
         body: {
-          action: "create-booking",
+          action,
           apartment_id: smoobuApartmentId || roomId,
           room_id: roomId,
           check_in: checkInStr,
@@ -91,6 +98,7 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
           guest_phone: values.guest_phone || "",
           guests_count: values.guests_count,
           notes: values.notes || "",
+          total_price: totalPrice,
         },
       });
 
@@ -113,6 +121,7 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
       setQrData(qr);
       setBookingDetails({
         ...data.booking,
+        sandbox: data.sandbox === true,
         guest_name: values.guest_name,
         guest_email: values.guest_email,
         check_in: checkInStr,
@@ -123,7 +132,7 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
       setStep("confirmed");
 
       toast({
-        title: "Buchung bestätigt!",
+        title: data.sandbox ? "Testbuchung erstellt" : "Buchung bestätigt!",
         description: `${roomTitle} vom ${format(values.check_in, "dd.MM.yyyy")} bis ${format(values.check_out, "dd.MM.yyyy")}`,
       });
     } catch (err: any) {
