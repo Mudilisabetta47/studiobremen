@@ -150,9 +150,11 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
         className="bg-card border border-border rounded-lg p-8 text-center"
       >
         <CheckCircle2 className="mx-auto mb-4 text-accent" size={48} />
-        <h3 className="font-display text-2xl font-bold text-foreground mb-2">Buchung bestätigt!</h3>
+        <h3 className="font-display text-2xl font-bold text-foreground mb-2">
+          {bookingDetails.sandbox ? "Testbuchung bestätigt" : "Buchung bestätigt!"}
+        </h3>
         <p className="font-body text-muted-foreground mb-6">
-          Vielen Dank, {bookingDetails.guest_name}. Ihre Buchung wurde erfolgreich erstellt.
+          {bookingDetails.sandbox ? "Sandmodus aktiv: Dies ist eine nicht-verbindliche Testbuchung." : `Vielen Dank, ${bookingDetails.guest_name}. Ihre Buchung wurde erfolgreich erstellt.`}
         </p>
 
         <div className="bg-secondary/50 rounded-lg p-6 mb-6 text-left space-y-2 font-body text-sm">
