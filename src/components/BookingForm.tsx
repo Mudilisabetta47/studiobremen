@@ -188,6 +188,16 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
       </h3>
 
       <AnimatePresence>
+        {isSandboxMode && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="bg-accent/10 border border-accent/30 rounded-md p-3 mb-4"
+          >
+            <p className="text-sm font-body text-accent">Sandmodus aktiv: Buchungen werden als Test gespeichert und nicht extern synchronisiert.</p>
+          </motion.div>
+        )}
+
         {availabilityError && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
