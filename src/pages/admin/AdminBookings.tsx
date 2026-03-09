@@ -214,39 +214,14 @@ const AdminBookings = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Detail Dialog */}
+      {/* Detail + QR Support Dialog */}
       <Dialog open={!!detailBooking} onOpenChange={() => setDetailBooking(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display text-xl">Buchungsdetails</DialogTitle>
           </DialogHeader>
           {detailBooking && (
-            <div className="space-y-3 mt-4 font-body text-sm">
-              <div className="grid grid-cols-2 gap-2">
-                <p className="text-muted-foreground">Gast:</p>
-                <p className="text-foreground font-medium">{detailBooking.guest_name}</p>
-                <p className="text-muted-foreground">E-Mail:</p>
-                <p className="text-foreground">{detailBooking.guest_email}</p>
-                <p className="text-muted-foreground">Telefon:</p>
-                <p className="text-foreground">{detailBooking.guest_phone || "–"}</p>
-                <p className="text-muted-foreground">Zimmer:</p>
-                <p className="text-foreground">{detailBooking.rooms?.title ?? "–"}</p>
-                <p className="text-muted-foreground">Zeitraum:</p>
-                <p className="text-foreground">{detailBooking.check_in} → {detailBooking.check_out}</p>
-                <p className="text-muted-foreground">Gäste:</p>
-                <p className="text-foreground">{detailBooking.guests_count}</p>
-                <p className="text-muted-foreground">Status:</p>
-                <p className="text-foreground capitalize">{detailBooking.status}</p>
-                <p className="text-muted-foreground">Buchungs-ID:</p>
-                <p className="text-foreground text-xs">{detailBooking.id}</p>
-                {detailBooking.notes && (
-                  <>
-                    <p className="text-muted-foreground">Notizen:</p>
-                    <p className="text-foreground">{detailBooking.notes}</p>
-                  </>
-                )}
-              </div>
-            </div>
+            <DetailWithQR booking={detailBooking} toast={toast} />
           )}
         </DialogContent>
       </Dialog>
