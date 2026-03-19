@@ -1,31 +1,39 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft, ChevronRight, User, CalendarCheck, Moon, Calendar,
-  ArrowRight, Clock,
+  ArrowRight, GripVertical, Undo2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths,
   parseISO, isToday, isWeekend, isSameDay, differenceInDays, isBefore, isAfter,
-  getDay,
+  addDays,
 } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Booking = Tables<"bookings"> & { rooms: { title: string } | null };
 
-/* Palette using hotel design tokens + complementary tones */
+type BookingBar = Booking & {
+  startCol: number;
+  span: number;
+  startsBeforeMonth: boolean;
+  endsAfterMonth: boolean;
+};
+
+/* ── Color palette ── */
 const roomPalette = [
-  { bg: "bg-accent/15", border: "border-accent/40", text: "text-accent-foreground", dot: "bg-accent", barBg: "hsl(38 70% 55% / 0.18)" },
-  { bg: "bg-primary/10", border: "border-primary/30", text: "text-primary", dot: "bg-primary", barBg: "hsl(220 40% 13% / 0.12)" },
-  { bg: "bg-destructive/10", border: "border-destructive/30", text: "text-destructive", dot: "bg-destructive", barBg: "hsl(0 84% 60% / 0.12)" },
-  { bg: "bg-emerald-500/15", border: "border-emerald-500/35", text: "text-emerald-700", dot: "bg-emerald-500", barBg: "hsl(160 60% 45% / 0.14)" },
-  { bg: "bg-violet-500/15", border: "border-violet-500/35", text: "text-violet-700", dot: "bg-violet-500", barBg: "hsl(270 60% 55% / 0.14)" },
-  { bg: "bg-sky-500/15", border: "border-sky-500/35", text: "text-sky-700", dot: "bg-sky-500", barBg: "hsl(200 80% 50% / 0.14)" },
+  { bg: "bg-accent/15", border: "border-accent/40", text: "text-accent-foreground", dot: "bg-accent" },
+  { bg: "bg-primary/10", border: "border-primary/30", text: "text-primary", dot: "bg-primary" },
+  { bg: "bg-destructive/10", border: "border-destructive/30", text: "text-destructive", dot: "bg-destructive" },
+  { bg: "bg-emerald-500/15", border: "border-emerald-500/35", text: "text-emerald-700", dot: "bg-emerald-500" },
+  { bg: "bg-violet-500/15", border: "border-violet-500/35", text: "text-violet-700", dot: "bg-violet-500" },
+  { bg: "bg-sky-500/15", border: "border-sky-500/35", text: "text-sky-700", dot: "bg-sky-500" },
 ];
 
 const statusConfig: Record<string, { label: string; dotClass: string }> = {
@@ -35,11 +43,32 @@ const statusConfig: Record<string, { label: string; dotClass: string }> = {
   completed: { label: "Abgeschlossen", dotClass: "bg-primary" },
 };
 
+/* ── Drag payload ── */
+interface DragPayload {
+  bookingId: string;
+  originalCheckIn: string;
+  originalCheckOut: string;
+  originalRoomId: string;
+  /** The day index the user grabbed */
+  grabDayIdx: number;
+}
+
 const AdminCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<Tables<"rooms">[]>([]);
   const [loading, setLoading] = useState(true);
+
+  /* Drag state */
+  const [dragPayload, setDragPayload] = useState<DragPayload | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ roomId: string; dayIdx: number } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [lastMove, setLastMove] = useState<{
+    bookingId: string;
+    prevCheckIn: string;
+    prevCheckOut: string;
+    prevRoomId: string;
+  } | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -74,7 +103,7 @@ const AdminCalendar = () => {
     return map;
   }, [rooms]);
 
-  const getBookingBars = useCallback((roomId: string) => {
+  const getBookingBars = useCallback((roomId: string): BookingBar[] => {
     return bookings
       .filter((b) => b.room_id === roomId)
       .map((b) => {
@@ -92,15 +121,142 @@ const AdminCalendar = () => {
   }, [bookings, monthStart, monthEnd]);
 
   /* Stats */
-  const totalNights = useMemo(() => bookings.reduce((sum, b) => {
-    return sum + differenceInDays(parseISO(b.check_out), parseISO(b.check_in));
-  }, 0), [bookings]);
-
+  const totalNights = useMemo(() => bookings.reduce((sum, b) =>
+    sum + differenceInDays(parseISO(b.check_out), parseISO(b.check_in)), 0), [bookings]);
   const confirmedCount = useMemo(() => bookings.filter(b => b.status === "confirmed").length, [bookings]);
 
-  /* Leading empty cells for weekday offset */
-  const startDayOffset = getDay(monthStart); // 0=Sun
-  const mondayOffset = startDayOffset === 0 ? 6 : startDayOffset - 1;
+  /* ── Drag handlers ── */
+  const handleDragStart = useCallback((e: React.DragEvent, booking: BookingBar, roomId: string) => {
+    const dayIdx = differenceInDays(
+      isBefore(parseISO(booking.check_in), monthStart) ? monthStart : parseISO(booking.check_in),
+      monthStart
+    );
+    const payload: DragPayload = {
+      bookingId: booking.id,
+      originalCheckIn: booking.check_in,
+      originalCheckOut: booking.check_out,
+      originalRoomId: roomId,
+      grabDayIdx: dayIdx,
+    };
+    setDragPayload(payload);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", booking.id);
+    // Make the drag image semi-transparent
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = "0.5";
+    }
+  }, [monthStart]);
+
+  const handleDragEnd = useCallback((e: React.DragEvent) => {
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = "1";
+    }
+    setDragPayload(null);
+    setDropTarget(null);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, roomId: string, dayIdx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropTarget({ roomId, dayIdx });
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDropTarget(null);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent, targetRoomId: string, targetDayIdx: number) => {
+    e.preventDefault();
+    if (!dragPayload) return;
+    setDropTarget(null);
+
+    const { bookingId, originalCheckIn, originalCheckOut, originalRoomId, grabDayIdx } = dragPayload;
+    const dayOffset = targetDayIdx - grabDayIdx;
+    const roomChanged = targetRoomId !== originalRoomId;
+
+    // Nothing changed
+    if (dayOffset === 0 && !roomChanged) {
+      setDragPayload(null);
+      return;
+    }
+
+    const oldCheckIn = parseISO(originalCheckIn);
+    const oldCheckOut = parseISO(originalCheckOut);
+    const newCheckIn = addDays(oldCheckIn, dayOffset);
+    const newCheckOut = addDays(oldCheckOut, dayOffset);
+
+    const newCheckInStr = format(newCheckIn, "yyyy-MM-dd");
+    const newCheckOutStr = format(newCheckOut, "yyyy-MM-dd");
+
+    // Optimistic update
+    setBookings(prev => prev.map(b =>
+      b.id === bookingId
+        ? { ...b, check_in: newCheckInStr, check_out: newCheckOutStr, room_id: targetRoomId, rooms: roomChanged ? (rooms.find(r => r.id === targetRoomId) ? { title: rooms.find(r => r.id === targetRoomId)!.title } : b.rooms) : b.rooms }
+        : b
+    ));
+
+    setSaving(true);
+    const updateData: Record<string, string> = {
+      check_in: newCheckInStr,
+      check_out: newCheckOutStr,
+    };
+    if (roomChanged) updateData.room_id = targetRoomId;
+
+    const { error } = await supabase
+      .from("bookings")
+      .update(updateData)
+      .eq("id", bookingId);
+
+    setSaving(false);
+    setDragPayload(null);
+
+    if (error) {
+      toast.error("Fehler beim Verschieben der Buchung");
+      // Revert
+      setBookings(prev => prev.map(b =>
+        b.id === bookingId
+          ? { ...b, check_in: originalCheckIn, check_out: originalCheckOut, room_id: originalRoomId }
+          : b
+      ));
+    } else {
+      setLastMove({
+        bookingId,
+        prevCheckIn: originalCheckIn,
+        prevCheckOut: originalCheckOut,
+        prevRoomId: originalRoomId,
+      });
+      const parts: string[] = [];
+      if (dayOffset !== 0) parts.push(`${dayOffset > 0 ? "+" : ""}${dayOffset} Tage`);
+      if (roomChanged) parts.push("neues Zimmer");
+      toast.success(`Buchung verschoben: ${parts.join(", ")}`);
+    }
+  }, [dragPayload, rooms]);
+
+  /* Undo last move */
+  const handleUndo = useCallback(async () => {
+    if (!lastMove) return;
+    setSaving(true);
+    const updateData: Record<string, string> = {
+      check_in: lastMove.prevCheckIn,
+      check_out: lastMove.prevCheckOut,
+      room_id: lastMove.prevRoomId,
+    };
+    const { error } = await supabase.from("bookings").update(updateData).eq("id", lastMove.bookingId);
+    setSaving(false);
+    if (!error) {
+      setBookings(prev => prev.map(b =>
+        b.id === lastMove.bookingId
+          ? { ...b, ...updateData, rooms: rooms.find(r => r.id === lastMove.prevRoomId) ? { title: rooms.find(r => r.id === lastMove.prevRoomId)!.title } : b.rooms }
+          : b
+      ));
+      toast.success("Verschiebung rückgängig gemacht");
+      setLastMove(null);
+    } else {
+      toast.error("Rückgängig machen fehlgeschlagen");
+    }
+  }, [lastMove, rooms]);
+
+  const isDragging = !!dragPayload;
 
   return (
     <div className="space-y-6">
@@ -111,8 +267,21 @@ const AdminCalendar = () => {
             Belegungskalender
           </h1>
           <p className="font-body text-sm text-muted-foreground mt-1">
-            Übersicht aller Zimmerbelegungen auf einen Blick
+            Buchungen per Drag & Drop verschieben
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {lastMove && (
+            <Button variant="outline" size="sm" onClick={handleUndo} disabled={saving} className="gap-1.5 text-xs">
+              <Undo2 size={14} /> Rückgängig
+            </Button>
+          )}
+          {saving && (
+            <span className="text-[11px] font-body text-muted-foreground flex items-center gap-1.5">
+              <span className="w-3 h-3 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+              Speichern…
+            </span>
+          )}
         </div>
       </div>
 
@@ -126,31 +295,27 @@ const AdminCalendar = () => {
 
       {/* ── Month Navigation ── */}
       <div className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-          onClick={() => setCurrentMonth((m) => subMonths(m, 1))}
-        >
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          onClick={() => setCurrentMonth((m) => subMonths(m, 1))}>
           <ChevronLeft size={16} />
         </Button>
-
-        <button
-          onClick={() => setCurrentMonth(new Date())}
-          className="font-display text-base font-semibold text-foreground hover:text-accent transition-colors"
-        >
+        <button onClick={() => setCurrentMonth(new Date())}
+          className="font-display text-base font-semibold text-foreground hover:text-accent transition-colors">
           {format(currentMonth, "MMMM yyyy", { locale: de })}
         </button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-          onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
-        >
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          onClick={() => setCurrentMonth((m) => addMonths(m, 1))}>
           <ChevronRight size={16} />
         </Button>
       </div>
+
+      {/* ── Drag hint ── */}
+      {isDragging && (
+        <div className="bg-accent/10 border border-accent/30 rounded-lg px-4 py-2 text-[11px] font-body text-accent-foreground flex items-center gap-2">
+          <GripVertical size={14} className="text-accent" />
+          Buchung auf eine neue Position oder ein anderes Zimmer ziehen und loslassen
+        </div>
+      )}
 
       {/* ── Calendar Grid ── */}
       <AnimatePresence mode="wait">
@@ -179,27 +344,18 @@ const AdminCalendar = () => {
                       const today = isToday(day);
                       const weekend = isWeekend(day);
                       return (
-                        <th
-                          key={day.toISOString()}
-                          className={cn(
-                            "p-0 text-center min-w-[38px] relative border-l border-border/20",
-                            today && "bg-accent/8",
-                            weekend && !today && "bg-muted/30",
-                          )}
-                        >
-                          {today && (
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-accent rounded-b-full" />
-                          )}
-                          <div className={cn(
-                            "text-[10px] font-body font-bold pt-2.5",
-                            today ? "text-accent" : weekend ? "text-muted-foreground/60" : "text-foreground/80",
-                          )}>
+                        <th key={day.toISOString()} className={cn(
+                          "p-0 text-center min-w-[38px] relative border-l border-border/20",
+                          today && "bg-accent/8",
+                          weekend && !today && "bg-muted/30",
+                        )}>
+                          {today && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-accent rounded-b-full" />}
+                          <div className={cn("text-[10px] font-body font-bold pt-2.5",
+                            today ? "text-accent" : weekend ? "text-muted-foreground/60" : "text-foreground/80")}>
                             {format(day, "d")}
                           </div>
-                          <div className={cn(
-                            "text-[9px] font-body pb-2",
-                            today ? "text-accent/70" : "text-muted-foreground/40",
-                          )}>
+                          <div className={cn("text-[9px] font-body pb-2",
+                            today ? "text-accent/70" : "text-muted-foreground/40")}>
                             {format(day, "EE", { locale: de })}
                           </div>
                         </th>
@@ -215,17 +371,15 @@ const AdminCalendar = () => {
                     const bars = getBookingBars(room.id);
 
                     return (
-                      <tr
-                        key={room.id}
-                        className={cn(
-                          "group relative transition-colors",
-                          roomIdx < rooms.length - 1 && "border-b border-border/30",
-                        )}
-                      >
+                      <tr key={room.id} className={cn(
+                        "group relative transition-colors",
+                        roomIdx < rooms.length - 1 && "border-b border-border/30",
+                        isDragging && dropTarget?.roomId === room.id && "bg-accent/5",
+                      )}>
                         {/* Room label */}
                         <td className="p-3 sticky left-0 bg-card z-20 border-r border-border/50 group-hover:bg-muted/20 transition-colors">
                           <div className="flex items-center gap-2.5">
-                            <div className={cn("w-2 h-2 rounded-full ring-2 ring-offset-1 ring-offset-card", color.dot, `ring-${color.dot.replace('bg-', '')}/20`)} />
+                            <div className={cn("w-2 h-2 rounded-full", color.dot)} />
                             <div>
                               <span className="font-body font-semibold text-foreground text-xs block leading-tight">
                                 {room.title}
@@ -238,7 +392,7 @@ const AdminCalendar = () => {
                         </td>
 
                         {/* Day cells */}
-                        {days.map((day) => {
+                        {days.map((day, dayIndex) => {
                           const today = isToday(day);
                           const weekend = isWeekend(day);
                           const dayIdx = differenceInDays(day, monthStart);
@@ -249,23 +403,33 @@ const AdminCalendar = () => {
                           const booking = dayBookings[0];
                           const isCheckIn = booking && isSameDay(day, parseISO(booking.check_in));
                           const isCheckOut = booking && isSameDay(day, parseISO(booking.check_out));
+                          const isDropHere = isDragging && dropTarget?.roomId === room.id && dropTarget?.dayIdx === dayIdx;
+                          const isBeingDragged = isDragging && dragPayload?.bookingId === booking?.id;
 
                           return (
                             <td
                               key={day.toISOString()}
                               className={cn(
-                                "p-0 relative h-[56px] border-l border-border/10",
+                                "p-0 relative h-[56px] border-l border-border/10 transition-colors",
                                 today && "bg-accent/5",
                                 weekend && !today && "bg-muted/15",
+                                isDropHere && !isBooked && "bg-accent/15 ring-1 ring-inset ring-accent/40",
                               )}
+                              onDragOver={(e) => handleDragOver(e, room.id, dayIdx)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, room.id, dayIdx)}
                             >
                               {isBooked && booking ? (
                                 <Popover>
                                   <PopoverTrigger asChild>
-                                    <button
+                                    <div
+                                      draggable={isCheckIn && !booking.startsBeforeMonth}
+                                      onDragStart={(e) => isCheckIn ? handleDragStart(e, booking, room.id) : e.preventDefault()}
+                                      onDragEnd={handleDragEnd}
                                       className={cn(
-                                        "absolute inset-x-0 top-2 bottom-2 cursor-pointer transition-all duration-150",
-                                        "hover:scale-y-110 hover:z-10",
+                                        "absolute inset-x-0 top-2 bottom-2 transition-all duration-150",
+                                        isBeingDragged ? "opacity-40 scale-y-90" : "hover:scale-y-110 hover:z-10",
+                                        "cursor-grab active:cursor-grabbing",
                                         color.bg,
                                         isCheckIn && !booking.startsBeforeMonth && "rounded-l-lg ml-0.5 border-l-[3px]",
                                         isCheckOut && "rounded-r-lg mr-0.5",
@@ -275,17 +439,20 @@ const AdminCalendar = () => {
                                     >
                                       {isCheckIn && !booking.startsBeforeMonth && (
                                         <span className={cn(
-                                          "absolute left-2 top-1/2 -translate-y-1/2 text-[9px] font-body font-bold truncate max-w-[70px]",
+                                          "absolute left-2 top-1/2 -translate-y-1/2 text-[9px] font-body font-bold truncate max-w-[70px] flex items-center gap-1",
                                           color.text,
                                         )}>
+                                          <GripVertical size={10} className="shrink-0 opacity-50" />
                                           {booking.guest_name.split(" ")[0]}
                                         </span>
                                       )}
-                                    </button>
+                                    </div>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-72 p-0 shadow-xl border-border" align="start" sideOffset={8}>
-                                    <BookingPopover booking={booking} color={color} />
-                                  </PopoverContent>
+                                  {!isDragging && (
+                                    <PopoverContent className="w-72 p-0 shadow-xl border-border" align="start" sideOffset={8}>
+                                      <BookingPopover booking={booking} color={color} />
+                                    </PopoverContent>
+                                  )}
                                 </Popover>
                               ) : null}
                             </td>
@@ -336,13 +503,15 @@ const AdminCalendar = () => {
             {cfg.label}
           </span>
         ))}
+        <span className="ml-3 flex items-center gap-1.5">
+          <GripVertical size={12} /> Drag & Drop aktiv
+        </span>
       </div>
     </div>
   );
 };
 
 /* ── Stat Card ── */
-
 function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: boolean }) {
   return (
     <div className={cn(
@@ -364,14 +533,12 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
 }
 
 /* ── Booking Popover ── */
-
 function BookingPopover({ booking, color }: { booking: Booking; color: typeof roomPalette[number] }) {
   const status = statusConfig[booking.status] ?? statusConfig.pending;
   const nights = differenceInDays(parseISO(booking.check_out), parseISO(booking.check_in));
 
   return (
     <div className="overflow-hidden">
-      {/* Header strip */}
       <div className={cn("px-4 py-3 flex items-center gap-3", color.bg)}>
         <div className={cn(
           "w-9 h-9 rounded-full flex items-center justify-center text-xs font-display font-bold",
@@ -386,7 +553,6 @@ function BookingPopover({ booking, color }: { booking: Booking; color: typeof ro
       </div>
 
       <div className="p-4 space-y-3">
-        {/* Dates */}
         <div className="flex items-center gap-2 text-[11px] font-body">
           <div className="flex-1 bg-muted/50 rounded-lg p-2.5">
             <p className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Anreise</p>
@@ -403,7 +569,6 @@ function BookingPopover({ booking, color }: { booking: Booking; color: typeof ro
           </div>
         </div>
 
-        {/* Meta row */}
         <div className="flex items-center justify-between text-[11px] font-body border-t border-border pt-3">
           <span className="flex items-center gap-1.5 text-muted-foreground">
             <Moon size={12} /> {nights} {nights === 1 ? "Nacht" : "Nächte"}
@@ -416,7 +581,6 @@ function BookingPopover({ booking, color }: { booking: Booking; color: typeof ro
           )}
         </div>
 
-        {/* Status */}
         <div className="flex items-center gap-2 pt-1">
           <span className={cn("w-2 h-2 rounded-full", status.dotClass)} />
           <span className="text-[11px] font-body text-muted-foreground">{status.label}</span>
