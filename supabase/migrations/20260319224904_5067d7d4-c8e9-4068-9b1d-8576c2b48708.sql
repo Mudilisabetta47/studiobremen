@@ -1,0 +1,1 @@
+ALTER TABLE public.rooms ADD COLUMN location text DEFAULT 'Bremen-Mitte';

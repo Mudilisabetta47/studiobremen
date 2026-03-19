@@ -145,6 +145,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          location: string | null
           long_description: string | null
           max_guests: number
           price_per_night: number
@@ -160,6 +161,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          location?: string | null
           long_description?: string | null
           max_guests?: number
           price_per_night: number
@@ -175,6 +177,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          location?: string | null
           long_description?: string | null
           max_guests?: number
           price_per_night?: number
