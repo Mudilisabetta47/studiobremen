@@ -55,7 +55,7 @@ const AdminRooms = () => {
 
   const handleSave = async () => {
     const amenitiesArr = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
-    const payload: Record<string, any> = {
+    const payload = {
       title: form.title,
       slug: form.slug || form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
       description: form.description, long_description: form.long_description,
