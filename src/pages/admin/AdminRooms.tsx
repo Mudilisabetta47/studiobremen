@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, BedDouble, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, BedDouble, ImageIcon, MapPin } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -20,7 +20,7 @@ const AdminRooms = () => {
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [form, setForm] = useState({
     title: "", slug: "", description: "", long_description: "",
-    price_per_night: 0, max_guests: 2, size: "", amenities: "",
+    price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -35,7 +35,7 @@ const AdminRooms = () => {
 
   const openCreate = () => {
     setEditingRoom(null);
-    setForm({ title: "", slug: "", description: "", long_description: "", price_per_night: 0, max_guests: 2, size: "", amenities: "" });
+    setForm({ title: "", slug: "", description: "", long_description: "", price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "Bremen-Mitte" });
     setImageFile(null);
     setDialogOpen(true);
   };
@@ -47,6 +47,7 @@ const AdminRooms = () => {
       long_description: room.long_description ?? "", price_per_night: room.price_per_night,
       max_guests: room.max_guests, size: room.size ?? "",
       amenities: (room.amenities ?? []).join(", "),
+      location: (room as any).location ?? "Bremen-Mitte",
     });
     setImageFile(null);
     setDialogOpen(true);
@@ -54,12 +55,13 @@ const AdminRooms = () => {
 
   const handleSave = async () => {
     const amenitiesArr = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
-    const payload = {
+    const payload: Record<string, any> = {
       title: form.title,
       slug: form.slug || form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
       description: form.description, long_description: form.long_description,
       price_per_night: form.price_per_night, max_guests: form.max_guests,
       size: form.size, amenities: amenitiesArr,
+      location: form.location || "Bremen-Mitte",
     };
 
     let roomId = editingRoom?.id;
@@ -141,6 +143,13 @@ const AdminRooms = () => {
                   {room.size} · max. {room.max_guests} Gäste · €{room.price_per_night}/Nacht
                 </p>
               </div>
+              {/* Location badge */}
+              {(room as any).location && (
+                <span className="hidden sm:flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full font-body font-medium bg-accent/10 text-accent">
+                  <MapPin size={10} />
+                  {(room as any).location}
+                </span>
+              )}
               <span className={`text-[10px] px-2.5 py-1 rounded-full font-body font-medium ${
                 room.is_active
                   ? "bg-emerald-500/10 text-emerald-600"
@@ -187,18 +196,34 @@ const AdminRooms = () => {
               <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Ausführliche Beschreibung</label>
               <Textarea value={form.long_description} onChange={e => setForm({ ...form, long_description: e.target.value })} rows={4} />
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Preis/Nacht (€)</label>
-                <Input type="number" value={form.price_per_night} onChange={e => setForm({ ...form, price_per_night: Number(e.target.value) })} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Preis/Nacht (€)</label>
+                  <Input type="number" value={form.price_per_night} onChange={e => setForm({ ...form, price_per_night: Number(e.target.value) })} />
+                </div>
+                <div>
+                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Max. Gäste</label>
+                  <Input type="number" value={form.max_guests} onChange={e => setForm({ ...form, max_guests: Number(e.target.value) })} />
+                </div>
               </div>
-              <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Max. Gäste</label>
-                <Input type="number" value={form.max_guests} onChange={e => setForm({ ...form, max_guests: Number(e.target.value) })} />
-              </div>
-              <div>
-                <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Größe</label>
-                <Input value={form.size} onChange={e => setForm({ ...form, size: e.target.value })} placeholder="z.B. 28 m²" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Größe</label>
+                  <Input value={form.size} onChange={e => setForm({ ...form, size: e.target.value })} placeholder="z.B. 28 m²" />
+                </div>
+                <div>
+                  <label className="text-xs font-body uppercase tracking-wider text-accent mb-1.5 flex items-center gap-1.5">
+                    <MapPin size={12} />
+                    Standort
+                  </label>
+                  <Input
+                    value={form.location}
+                    onChange={e => setForm({ ...form, location: e.target.value })}
+                    placeholder="z.B. Bremen-Mitte"
+                    className="border-accent/30 focus-visible:ring-accent"
+                  />
+                </div>
               </div>
             </div>
             <div>
