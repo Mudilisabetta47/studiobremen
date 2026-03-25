@@ -26,6 +26,36 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
     mood: "Modern, durchdacht und voller Charakter — unser City Apartment verbindet die Freiheit einer eigenen Wohnung mit dem Komfort eines Boutique-Hotels. Helle Räume, klare Linien und natürliche Materialien schaffen eine Atmosphäre, die sofort vertraut wirkt.",
     highlight: "Kochen Sie mit frischen Zutaten vom Markt und genießen Sie Ihren Kaffee am Fenster mit Blick auf das geschäftige Treiben der Stadt.",
   },
+  "stadtwohnung-nr-2": {
+    headline: "Ihr urbaner Rückzugsort",
+    mood: "Mitten im Herzen Bremens, nur wenige Schritte vom Hauptbahnhof entfernt, empfängt Sie dieses moderne Zimmer mit stilvoller Einrichtung und allem Komfort. Schnelles WLAN, ein bequemes Bett und eine voll ausgestattete Küche machen Ihren Aufenthalt perfekt.",
+    highlight: "Genießen Sie die perfekte Balance zwischen urbanem Trubel und privatem Rückzug — die Altstadt liegt direkt vor Ihrer Tür.",
+  },
+  "city-apartment-no3": {
+    headline: "Frisch & Modern im Stadtzentrum",
+    mood: "Dieses frisch renovierte Apartment besticht durch geschmackvolle Einrichtung und liebevolle Details. Ein komfortables Doppelbett, eine moderne Kochnische und ein stylischer Bartisch laden zum Wohlfühlen ein. Das moderne Bad mit begehbarer Dusche rundet das Erlebnis ab.",
+    highlight: "Nur eine Minute vom Hauptbahnhof — perfekt für Entdecker und Geschäftsreisende, die zentral und komfortabel wohnen möchten.",
+  },
+  "city-apartment-nr-4": {
+    headline: "Stilvolle Oase am Rembertiring",
+    mood: "Erleben Sie modernen Komfort in dieser stilvollen Wohnung mit luxuriösem Boxspringbett und gemütlichem Wohnbereich. Die voll ausgestattete Küche und der Smart-TV sorgen dafür, dass es Ihnen an nichts fehlt. Die zentrale, aber ruhige Lage macht dieses Apartment besonders.",
+    highlight: "Nur wenige Schritte von der Weser und Bremens schönsten Highlights entfernt — Ihre City-Oase erwartet Sie.",
+  },
+  "city-apartment-no5": {
+    headline: "Komfort trifft Zentralität",
+    mood: "Ein modernes Apartment mit Kingsize-Bett und durchdachtem Design am Rembertiring. Hier finden Geschäftsreisende den perfekten Arbeitsplatz und Urlauber die ideale Basis für Bremen-Erkundungen. Voll ausgestattete Küche und Smart-TV inklusive.",
+    highlight: "Die perfekte Verbindung aus Komfort und Lage — entdecken Sie Bremen entspannt und stilvoll.",
+  },
+  "schlachte-studio-no4": {
+    headline: "Leben an der Weserpromenade",
+    mood: "Direkt an der Schlachte gelegen, bietet dieses charmante Studio alles für einen unvergesslichen Aufenthalt. Eine komplett ausgestattete Küche, ein gemütliches Kingsize-Bett und ein kleiner Balkon laden zum Entspannen ein. Die Espressomaschine sorgt für den perfekten Start in den Tag.",
+    highlight: "Treten Sie vor die Tür und genießen Sie die malerische Weserpromenade mit ihren Restaurants, Cafés und dem Flussblick.",
+  },
+  "schlachte-studio-no5": {
+    headline: "Gemütlichkeit an der Schlachte",
+    mood: "Unser Studio an der beliebten Schlachte-Promenade ist der ideale Ausgangspunkt für Ihre Bremen-Erkundung. Genießen Sie die unmittelbare Nähe zur Weser und das vielfältige Angebot an Restaurants und Cafés direkt vor der Haustür.",
+    highlight: "Spaziergänge entlang der Weser am Abend, das Rauschen des Flusses — hier wird jeder Aufenthalt zum Erlebnis.",
+  },
 };
 
 const RoomDetail = () => {
@@ -45,15 +75,20 @@ const RoomDetail = () => {
         size: dbRoom.size ?? "",
         amenities: dbRoom.amenities ?? [],
         dbId: dbRoom.id,
+        allImages: dbRoom.all_images ?? [],
       }
     : staticRoom
-    ? { ...staticRoom, dbId: staticRoom.id }
+    ? { ...staticRoom, dbId: staticRoom.id, allImages: [staticRoom.image] }
     : null;
 
   const atmosphere = atmosphereTexts[id ?? ""] ?? atmosphereTexts["deluxe-zimmer"];
 
-  // For gallery, use room image repeated as placeholder (real multi-image support from DB)
-  const galleryImages = room ? [room.image, room.image, room.image, room.image, room.image] : [];
+  // Use all DB images for gallery, fallback to primary image repeated
+  const galleryImages = room
+    ? room.allImages.length > 0
+      ? room.allImages
+      : [room.image]
+    : [];
 
   if (isLoading) {
     return (

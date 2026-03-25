@@ -4,6 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 
 export type DbRoom = Tables<"rooms"> & {
   primary_image?: string;
+  all_images?: string[];
 };
 
 async function fetchRooms(): Promise<DbRoom[]> {
@@ -60,12 +61,14 @@ export function useRoom(slug: string | undefined) {
 
       const { data: images } = await supabase
         .from("room_images")
-        .select("image_url")
+        .select("image_url, is_primary")
         .eq("room_id", data.id)
-        .eq("is_primary", true)
-        .maybeSingle();
+        .order("sort_order");
 
-      return { ...data, primary_image: images?.image_url } as DbRoom;
+      const allImages = (images ?? []).map((img) => img.image_url);
+      const primaryImage = images?.find((img) => img.is_primary)?.image_url ?? allImages[0];
+
+      return { ...data, primary_image: primaryImage, all_images: allImages } as DbRoom;
     },
     enabled: !!slug,
   });
