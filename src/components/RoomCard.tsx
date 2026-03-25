@@ -14,7 +14,7 @@ interface RoomCardProps {
   location?: string;
 }
 
-const RoomCard = ({ id, title, description, price, image, guests, size, index }: RoomCardProps) => {
+const RoomCard = ({ id, title, description, price, image, guests, size, index, location }: RoomCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
