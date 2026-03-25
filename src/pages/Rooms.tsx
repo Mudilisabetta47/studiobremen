@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import RoomCard from "@/components/RoomCard";
 import BookingWidget, { BookingFilters } from "@/components/BookingWidget";
@@ -8,7 +9,14 @@ import { Loader2 } from "lucide-react";
 
 const Rooms = () => {
   const { data: dbRooms, isLoading } = useRooms();
-  const [filters, setFilters] = useState<BookingFilters>({ location: "all", guests: "2" });
+  const [searchParams] = useSearchParams();
+
+  const initialFilters: BookingFilters = {
+    location: searchParams.get("location") || "all",
+    guests: searchParams.get("guests") || "2",
+  };
+
+  const [filters, setFilters] = useState<BookingFilters>(initialFilters);
 
   const displayRooms = useMemo(() => {
     const base = dbRooms && dbRooms.length > 0
@@ -25,11 +33,9 @@ const Rooms = () => {
       : staticRooms.map((r) => ({ ...r, location: "" }));
 
     return base.filter((room) => {
-      // Location filter
       if (filters.location !== "all" && room.location && room.location !== filters.location) {
         return false;
       }
-      // Guest count filter
       const guestCount = parseInt(filters.guests, 10);
       if (!isNaN(guestCount) && guestCount > 0 && room.guests < guestCount) {
         return false;
@@ -59,7 +65,7 @@ const Rooms = () => {
       </section>
 
       <section className="container mx-auto px-4 -mt-8 relative z-10 mb-16">
-        <BookingWidget onSearch={setFilters} />
+        <BookingWidget onSearch={setFilters} defaultFilters={initialFilters} />
       </section>
 
       <section className="container mx-auto px-4 pb-24">

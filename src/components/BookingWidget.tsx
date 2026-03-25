@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarDays, Users, Search, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,13 +31,15 @@ export interface BookingFilters {
 
 interface BookingWidgetProps {
   onSearch?: (filters: BookingFilters) => void;
+  defaultFilters?: BookingFilters;
 }
 
-const BookingWidget = ({ onSearch }: BookingWidgetProps) => {
-  const [checkIn, setCheckIn] = useState<Date | undefined>();
-  const [checkOut, setCheckOut] = useState<Date | undefined>();
-  const [guests, setGuests] = useState("2");
-  const [location, setLocation] = useState("all");
+const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
+  const navigate = useNavigate();
+  const [checkIn, setCheckIn] = useState<Date | undefined>(defaultFilters?.checkIn);
+  const [checkOut, setCheckOut] = useState<Date | undefined>(defaultFilters?.checkOut);
+  const [guests, setGuests] = useState(defaultFilters?.guests ?? "2");
+  const [location, setLocation] = useState(defaultFilters?.location ?? "all");
   const [locations, setLocations] = useState<string[]>([]);
 
   useEffect(() => {
@@ -55,7 +58,19 @@ const BookingWidget = ({ onSearch }: BookingWidgetProps) => {
   }, []);
 
   const handleSearch = () => {
-    onSearch?.({ location, guests, checkIn, checkOut });
+    const filters: BookingFilters = { location, guests, checkIn, checkOut };
+    if (onSearch) {
+      onSearch(filters);
+    } else {
+      // Navigate to /zimmer with query params
+      const params = new URLSearchParams();
+      if (location !== "all") params.set("location", location);
+      if (guests && guests !== "2") params.set("guests", guests);
+      if (checkIn) params.set("checkIn", format(checkIn, "yyyy-MM-dd"));
+      if (checkOut) params.set("checkOut", format(checkOut, "yyyy-MM-dd"));
+      const qs = params.toString();
+      navigate(qs ? `/zimmer?${qs}` : "/zimmer");
+    }
   };
 
   return (
