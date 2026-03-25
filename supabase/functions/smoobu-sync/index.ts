@@ -20,9 +20,32 @@ Deno.serve(async (req) => {
   try {
     const { action, ...payload } = await req.json();
 
-    // Check availability
+    // ── Helper: DB-level overlap check ──
+    async function checkDbOverlap(roomId: string, checkIn: string, checkOut: string): Promise<boolean> {
+      const { data } = await supabase
+        .from("bookings")
+        .select("id")
+        .eq("room_id", roomId)
+        .in("status", ["pending", "confirmed"])
+        .lt("check_in", checkOut)
+        .gt("check_out", checkIn)
+        .limit(1);
+      return (data?.length ?? 0) > 0;
+    }
+
+    // ── Check availability ──
     if (action === "check-availability") {
-      const { apartment_id, check_in, check_out } = payload;
+      const { apartment_id, check_in, check_out, room_id } = payload;
+
+      // DB overlap check first
+      if (room_id) {
+        const hasOverlap = await checkDbOverlap(room_id, check_in, check_out);
+        if (hasOverlap) {
+          return new Response(JSON.stringify({ available: false, error: "Bereits gebucht in diesem Zeitraum" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
 
       const res = await fetch(
         `${SMOOBU_API_BASE}/apartments/${apartment_id}/rates?start_date=${check_in}&end_date=${check_out}`,
@@ -38,27 +61,27 @@ Deno.serve(async (req) => {
       }
 
       const data = await res.json();
-      // Check if all days are available
       const allAvailable = Object.values(data.data || {}).every((day: any) => day.available === 1);
       return new Response(JSON.stringify({ available: allAvailable, rates: data.data }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Create booking
+    // ── Create booking ──
     if (action === "create-booking" || action === "create-booking-sandbox") {
       const {
-        apartment_id,
-        check_in,
-        check_out,
-        guest_name,
-        guest_email,
-        guest_phone,
-        guests_count,
-        room_id,
-        notes,
-        total_price,
+        apartment_id, check_in, check_out, guest_name, guest_email,
+        guest_phone, guests_count, room_id, notes, total_price,
       } = payload;
+
+      // 1. DB-level double-booking check (always, even sandbox)
+      const hasOverlap = await checkDbOverlap(room_id, check_in, check_out);
+      if (hasOverlap) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Dieses Apartment ist für den gewählten Zeitraum bereits gebucht." }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       if (action === "create-booking-sandbox") {
         const { data: booking, error: sandboxError } = await supabase.from("bookings").insert({
@@ -96,7 +119,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      // 1. Live availability check
+      // 2. Live Smoobu availability check
       const availRes = await fetch(
         `${SMOOBU_API_BASE}/apartments/${apartment_id}/rates?start_date=${check_in}&end_date=${check_out}`,
         { headers: { "Api-Key": smoobuApiKey, "Content-Type": "application/json" } }
@@ -107,13 +130,13 @@ Deno.serve(async (req) => {
         const allAvailable = Object.values(availData.data || {}).every((day: any) => day.available === 1);
         if (!allAvailable) {
           return new Response(
-            JSON.stringify({ success: false, error: "Zimmer ist für diesen Zeitraum nicht verfügbar" }),
+            JSON.stringify({ success: false, error: "Zimmer ist für diesen Zeitraum nicht verfügbar (Smoobu)" }),
             { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
 
-      // 2. Create reservation in Smoobu
+      // 3. Create reservation in Smoobu
       const [firstName, ...lastParts] = guest_name.split(" ");
       const lastName = lastParts.join(" ") || firstName;
 
@@ -130,7 +153,7 @@ Deno.serve(async (req) => {
           phone: guest_phone || "",
           adults: guests_count,
           note: notes || "",
-          channelId: 0, // Direct booking
+          channelId: 0,
         }),
       });
 
@@ -140,7 +163,7 @@ Deno.serve(async (req) => {
         smoobuReservationId = String(smoobuData.id || smoobuData.reservationId || "");
       }
 
-      // 3. Create booking in database
+      // 4. Create booking in database
       const { data: booking, error: dbError } = await supabase.from("bookings").insert({
         room_id,
         guest_name,
@@ -159,6 +182,7 @@ Deno.serve(async (req) => {
           check_in,
           check_out,
           room_id,
+          payment_method: "vor_ort",
         }),
       }).select().single();
 
@@ -178,6 +202,7 @@ Deno.serve(async (req) => {
           check_out,
           room_id,
           smoobu_id: smoobuReservationId,
+          payment_method: "vor_ort",
         }),
       }).eq("id", booking.id);
 
