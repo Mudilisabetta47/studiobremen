@@ -39,6 +39,7 @@ const Index = () => {
         image: r.primary_image ?? "/placeholder.svg",
         guests: r.max_guests,
         size: r.size ?? "",
+        location: r.location ?? "",
       }))
     : staticRooms;
 

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Users, Maximize2, ArrowRight } from "lucide-react";
+import { Users, Maximize2, ArrowRight, MapPin } from "lucide-react";
 
 interface RoomCardProps {
   id: string;
@@ -11,9 +11,10 @@ interface RoomCardProps {
   guests: number;
   size: string;
   index: number;
+  location?: string;
 }
 
-const RoomCard = ({ id, title, description, price, image, guests, size, index }: RoomCardProps) => {
+const RoomCard = ({ id, title, description, price, image, guests, size, index, location }: RoomCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -38,9 +39,14 @@ const RoomCard = ({ id, title, description, price, image, guests, size, index }:
 
           {/* Content */}
           <div className="p-6">
-            <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-accent transition-colors">
+            <h3 className="font-display text-xl font-semibold text-foreground mb-1 group-hover:text-accent transition-colors">
               {title}
             </h3>
+            {location && (
+              <p className="flex items-center gap-1 text-xs text-accent font-body mb-2">
+                <MapPin size={12} /> {location}
+              </p>
+            )}
             <p className="font-body text-sm text-muted-foreground mb-4 line-clamp-2">
               {description}
             </p>
