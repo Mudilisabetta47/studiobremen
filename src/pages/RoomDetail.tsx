@@ -45,15 +45,20 @@ const RoomDetail = () => {
         size: dbRoom.size ?? "",
         amenities: dbRoom.amenities ?? [],
         dbId: dbRoom.id,
+        allImages: dbRoom.all_images ?? [],
       }
     : staticRoom
-    ? { ...staticRoom, dbId: staticRoom.id }
+    ? { ...staticRoom, dbId: staticRoom.id, allImages: [staticRoom.image] }
     : null;
 
   const atmosphere = atmosphereTexts[id ?? ""] ?? atmosphereTexts["deluxe-zimmer"];
 
-  // For gallery, use room image repeated as placeholder (real multi-image support from DB)
-  const galleryImages = room ? [room.image, room.image, room.image, room.image, room.image] : [];
+  // Use all DB images for gallery, fallback to primary image repeated
+  const galleryImages = room
+    ? room.allImages.length > 0
+      ? room.allImages
+      : [room.image]
+    : [];
 
   if (isLoading) {
     return (
