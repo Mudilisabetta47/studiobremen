@@ -21,7 +21,18 @@ import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
-const BookingWidget = () => {
+export interface BookingFilters {
+  location: string;
+  guests: string;
+  checkIn?: Date;
+  checkOut?: Date;
+}
+
+interface BookingWidgetProps {
+  onSearch?: (filters: BookingFilters) => void;
+}
+
+const BookingWidget = ({ onSearch }: BookingWidgetProps) => {
   const [checkIn, setCheckIn] = useState<Date | undefined>();
   const [checkOut, setCheckOut] = useState<Date | undefined>();
   const [guests, setGuests] = useState("2");
@@ -42,6 +53,10 @@ const BookingWidget = () => {
     };
     fetchLocations();
   }, []);
+
+  const handleSearch = () => {
+    onSearch?.({ location, guests, checkIn, checkOut });
+  };
 
   return (
     <motion.div
@@ -162,7 +177,11 @@ const BookingWidget = () => {
           />
         </div>
 
-        <Button variant="hero" className="h-11 gap-2 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+        <Button
+          variant="hero"
+          className="h-11 gap-2 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+          onClick={handleSearch}
+        >
           <Search size={16} />
           Suchen
         </Button>
