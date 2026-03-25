@@ -39,9 +39,14 @@ const RoomCard = ({ id, title, description, price, image, guests, size, index, l
 
           {/* Content */}
           <div className="p-6">
-            <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-accent transition-colors">
+            <h3 className="font-display text-xl font-semibold text-foreground mb-1 group-hover:text-accent transition-colors">
               {title}
             </h3>
+            {location && (
+              <p className="flex items-center gap-1 text-xs text-accent font-body mb-2">
+                <MapPin size={12} /> {location}
+              </p>
+            )}
             <p className="font-body text-sm text-muted-foreground mb-4 line-clamp-2">
               {description}
             </p>
