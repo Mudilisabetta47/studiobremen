@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Users, Maximize2, ArrowRight } from "lucide-react";
+import { Users, Maximize2, ArrowRight, MapPin } from "lucide-react";
 
 interface RoomCardProps {
   id: string;
@@ -11,6 +11,7 @@ interface RoomCardProps {
   guests: number;
   size: string;
   index: number;
+  location?: string;
 }
 
 const RoomCard = ({ id, title, description, price, image, guests, size, index }: RoomCardProps) => {
