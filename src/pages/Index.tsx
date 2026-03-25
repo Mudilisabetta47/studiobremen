@@ -8,7 +8,8 @@ import { useRooms } from "@/hooks/useRooms";
 import { rooms as staticRooms } from "@/data/rooms";
 import {
   Star, Loader2, MapPin, Coffee, Wifi, ShieldCheck,
-  ArrowRight, Sparkles,
+  ArrowRight, Sparkles, Clock, Key, BadgeCheck, Heart,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-hotel.jpg";
@@ -53,6 +54,35 @@ const Index = () => {
         <BookingWidget />
       </section>
 
+      {/* ═══ USPs / TRUST BAR ═══ */}
+      <section className="py-12 border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            {[
+              { icon: Key, title: "Selbst-Check-in", desc: "Flexibel & kontaktlos" },
+              { icon: MapPin, title: "Zentrale Lage", desc: "5 Min. zum Hauptbahnhof" },
+              { icon: Wifi, title: "Kostenloses WLAN", desc: "Highspeed in jeder Wohnung" },
+              { icon: CheckCircle2, title: "Kostenlos stornierbar", desc: "Bis 48h vor Anreise" },
+            ].map((usp, i) => (
+              <motion.div
+                key={usp.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="text-center"
+              >
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-3">
+                  <usp.icon size={20} className="text-accent" />
+                </div>
+                <p className="font-display text-sm font-semibold text-foreground">{usp.title}</p>
+                <p className="font-body text-xs text-muted-foreground mt-0.5">{usp.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══ ABOUT / STORY ═══ */}
       <section className="py-28 lg:py-36 overflow-hidden">
         <div className="container mx-auto px-4">
@@ -62,11 +92,10 @@ const Index = () => {
               <div className="relative overflow-hidden rounded-2xl aspect-[4/5] lg:aspect-[3/4]">
                 <img
                   src={roomSuite}
-                  alt="Premium Suite Hotel Bremen"
+                  alt="Stilvolles Apartment in Bremen – Studio Bremen"
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                {/* Gold accent border */}
                 <div className="absolute inset-0 border-2 border-accent/20 rounded-2xl pointer-events-none" />
               </div>
               {/* Floating badge */}
@@ -77,8 +106,8 @@ const Index = () => {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="absolute -bottom-6 -right-4 lg:-right-8 bg-primary text-primary-foreground rounded-xl p-5 shadow-2xl"
               >
-                <p className="font-display text-3xl font-bold text-accent">5+</p>
-                <p className="font-body text-xs text-primary-foreground/70 mt-0.5">Jahre<br />Erfahrung</p>
+                <p className="font-display text-3xl font-bold text-accent">4.9★</p>
+                <p className="font-body text-xs text-primary-foreground/70 mt-0.5">Durchschnitt<br />bei Airbnb</p>
               </motion.div>
             </motion.div>
 
@@ -88,7 +117,7 @@ const Index = () => {
                 <div className="flex items-center gap-3 mb-5">
                   <span className="w-10 h-[1px] bg-accent" />
                   <span className="font-body text-accent text-[11px] tracking-[0.3em] uppercase font-semibold">
-                    Unsere Geschichte
+                    Über uns
                   </span>
                 </div>
                 <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-6">
@@ -98,7 +127,7 @@ const Index = () => {
                 </h2>
                 <p className="font-body text-muted-foreground leading-relaxed text-base mb-6 max-w-lg">
                   Seit 2020 verbinden wir modernen Komfort mit der Herzlichkeit Bremens.
-                  Jedes Zimmer erzählt eine eigene Geschichte – von hanseatischer Tradition
+                  Jedes Apartment erzählt eine eigene Geschichte – von hanseatischer Tradition
                   bis zu zeitgenössischem Design.
                 </p>
                 <p className="font-body text-muted-foreground leading-relaxed text-base mb-10 max-w-lg">
@@ -110,10 +139,10 @@ const Index = () => {
               {/* Feature pills */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: MapPin, label: "Zentrale Lage", desc: "Mitten in Bremen" },
-                  { icon: Coffee, label: "Frühstück", desc: "Täglich frisch" },
+                  { icon: MapPin, label: "Zentrale Lage", desc: "2 Standorte in Bremen" },
+                  { icon: Coffee, label: "Voll ausgestattet", desc: "Küche & Espresso" },
                   { icon: Wifi, label: "Highspeed WLAN", desc: "Kostenfrei" },
-                  { icon: ShieldCheck, label: "Sicher", desc: "24/7 Rezeption" },
+                  { icon: ShieldCheck, label: "Verifiziert", desc: "Superhost bei Airbnb" },
                 ].map((feat, i) => (
                   <motion.div
                     key={feat.label}
@@ -148,10 +177,10 @@ const Index = () => {
               <span className="w-10 h-[1px] bg-accent" />
             </div>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-4">
-              Zimmer & Apartments
+              Unsere Apartments
             </h2>
             <p className="font-body text-primary-foreground/60 max-w-md mx-auto">
-              Jedes Zimmer ein Unikat – von elegant bis großzügig.
+              6 einzigartige Apartments an 2 Top-Standorten in Bremen – ab €49 pro Nacht.
             </p>
           </motion.div>
 
@@ -169,11 +198,38 @@ const Index = () => {
 
           <motion.div {...fadeUp} className="text-center mt-14">
             <Link to="/zimmer">
-              <Button variant="hero-outline" size="lg" className="gap-2 px-8">
-                Alle Zimmer ansehen <ArrowRight size={16} />
+              <Button variant="hero" size="lg" className="gap-2 px-10 shadow-lg hover:shadow-xl transition-shadow">
+                Alle Apartments ansehen <ArrowRight size={16} />
               </Button>
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ TRUST ELEMENTS ═══ */}
+      <section className="py-20 bg-card border-y border-border">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            {[
+              { icon: BadgeCheck, stat: "Superhost", desc: "Ausgezeichnet bei Airbnb für herausragende Gastfreundschaft" },
+              { icon: Heart, stat: "500+", desc: "Zufriedene Gäste aus aller Welt seit 2020" },
+              { icon: Star, stat: "4.9 / 5", desc: "Durchschnittliche Bewertung über alle Apartments" },
+            ].map((item, i) => (
+              <motion.div
+                key={item.stat}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.15 }}
+              >
+                <div className="w-14 h-14 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                  <item.icon size={24} className="text-accent" />
+                </div>
+                <p className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">{item.stat}</p>
+                <p className="font-body text-sm text-muted-foreground max-w-xs mx-auto">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -187,9 +243,9 @@ const Index = () => {
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
             <Sparkles size={28} className="text-accent mx-auto mb-6" />
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-6 leading-tight">
-              Ein Ort, an dem
+              Ihr Zuhause in
               <br />
-              <span className="italic font-normal text-accent">jeder Moment zählt</span>
+              <span className="italic font-normal text-accent">Bremen</span>
             </h2>
             <p className="font-body text-primary-foreground/70 text-base mb-10 max-w-lg mx-auto leading-relaxed">
               Von der handverlesenen Bettwäsche bis zum perfekt gebrühten Kaffee – 
@@ -197,8 +253,8 @@ const Index = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/zimmer">
-                <Button variant="hero" size="lg" className="px-10">
-                  Jetzt buchen
+                <Button variant="hero" size="lg" className="px-10 shadow-lg hover:shadow-xl transition-shadow">
+                  Verfügbarkeit prüfen
                 </Button>
               </Link>
             </div>
@@ -226,7 +282,7 @@ const Index = () => {
                     <Star key={s} size={16} className="text-accent fill-accent" />
                   ))}
                 </div>
-                <span className="font-body text-sm text-muted-foreground">4.9 / 5</span>
+                <span className="font-body text-sm text-muted-foreground">4.9 / 5 bei Airbnb</span>
               </div>
             </div>
           </motion.div>
@@ -236,24 +292,29 @@ const Index = () => {
       </section>
 
       {/* ═══ FINAL CTA ═══ */}
-      <section className="bg-card border-t border-border py-20">
+      <section className="bg-gradient-hotel py-20">
         <div className="container mx-auto px-4">
           <motion.div {...fadeUp} className="text-center max-w-xl mx-auto">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Bereit für Ihren Aufenthalt?
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground mb-4">
+              Bereit für Ihren Aufenthalt in Bremen?
             </h2>
-            <p className="font-body text-muted-foreground mb-8">
-              Buchen Sie jetzt Ihr Zimmer und erleben Sie Bremen von seiner schönsten Seite.
+            <p className="font-body text-primary-foreground/70 mb-4">
+              Ab €49 pro Nacht – zentral gelegen, modern ausgestattet, flexibel buchbar.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-primary-foreground/60 font-body mb-8">
+              <span className="flex items-center gap-1"><CheckCircle2 size={14} className="text-accent" /> Kostenlose Stornierung</span>
+              <span className="flex items-center gap-1"><CheckCircle2 size={14} className="text-accent" /> Selbst-Check-in</span>
+              <span className="flex items-center gap-1"><CheckCircle2 size={14} className="text-accent" /> WLAN inklusive</span>
+            </div>
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/zimmer">
-                <Button variant="hero" size="lg" className="px-10">
-                  Zimmer buchen
+                <Button variant="hero" size="lg" className="px-10 shadow-lg hover:shadow-xl transition-shadow">
+                  Jetzt Apartment buchen
                 </Button>
               </Link>
               <Link to="/kontakt">
-                <Button variant="outline" size="lg" className="px-10">
-                  Fragen? Kontakt
+                <Button variant="hero-outline" size="lg" className="px-10">
+                  Kontakt aufnehmen
                 </Button>
               </Link>
             </div>

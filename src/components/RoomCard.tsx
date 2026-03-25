@@ -32,6 +32,7 @@ const RoomCard = ({ id, title, description, price, image, guests, size, index, l
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-1.5 rounded-sm">
+              <span className="font-body text-[10px] uppercase tracking-wider text-primary-foreground/70 block">ab</span>
               <span className="font-display text-lg font-semibold">€{price}</span>
               <span className="font-body text-xs text-primary-foreground/70"> / Nacht</span>
             </div>
