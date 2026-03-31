@@ -3,10 +3,14 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const Contact = () => {
   return (
     <main className="pt-20">
+      <div className="container mx-auto px-4">
+        <Breadcrumbs items={[{ label: "Kontakt" }]} />
+      </div>
       {/* Header */}
       <section className="bg-gradient-hotel py-20">
         <div className="container mx-auto px-4 text-center">
