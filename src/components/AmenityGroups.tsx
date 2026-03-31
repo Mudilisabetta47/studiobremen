@@ -17,8 +17,8 @@ const iconMap: Record<string, React.ElementType> = {
 const groups = [
   { label: "Schlafzimmer", icon: Bed, keywords: ["Bett", "Bademantel", "Pantoffeln", "Bettwäsche"] },
   { label: "Badezimmer", icon: Bath, keywords: ["Dusche", "Regendusche", "Badewanne", "Bad"] },
-  { label: "Wohnbereich", icon: Tv, keywords: ["TV", "Smart-TV", "Wohnbereich", "Schreibtisch", "Küche", "Geschirrspüler", "Waschmaschine"] },
-  { label: "Service & Komfort", icon: ConciergeBell, keywords: ["WLAN", "Minibar", "Nespresso", "Klimaanlage", "Safe"] },
+  { label: "Wohnbereich", icon: Tv, keywords: ["TV", "Smart-TV", "Wohnbereich", "Schreibtisch", "Küche", "Geschirrspüler", "Waschmaschine", "Arbeitsplatz", "Kühlschrank"] },
+  { label: "Service & Komfort", icon: ConciergeBell, keywords: ["WLAN", "Minibar", "Nespresso", "Klimaanlage", "Safe", "Espressomaschine", "Aufzug", "Föhn", "Selbst-Check-in", "Langzeitaufenthalte", "Ladestation", "Parkhaus", "Wasser, Kaffee", "Am Wasser", "Balkon"] },
 ];
 
 const AmenityGroups = ({ amenities }: AmenityGroupsProps) => {
