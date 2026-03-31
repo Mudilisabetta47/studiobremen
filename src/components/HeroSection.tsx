@@ -54,7 +54,7 @@ const HeroSection = () => {
             >
               <span className="w-12 h-[1px] bg-accent" />
               <span className="font-body text-accent text-[11px] tracking-[0.35em] uppercase font-semibold">
-                Boutique Hotel · Bremen
+                Apartments · Bremen
               </span>
             </motion.div>
 
