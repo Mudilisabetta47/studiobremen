@@ -58,6 +58,11 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
 };
 
+// Smoobu iframe URLs per room slug
+const smoobuIframeUrls: Record<string, string> = {
+  "stadtwohnung-nr-2": "https://login.smoobu.com/de/booking-tool/iframe/800140",
+};
+
 const RoomDetail = () => {
   const { id } = useParams();
   const { data: dbRoom, isLoading } = useRoom(id);
