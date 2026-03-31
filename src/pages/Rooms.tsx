@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import RoomCard from "@/components/RoomCard";
 import BookingWidget, { BookingFilters } from "@/components/BookingWidget";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { useRooms } from "@/hooks/useRooms";
 import { rooms as staticRooms } from "@/data/rooms";
 import { Loader2 } from "lucide-react";
