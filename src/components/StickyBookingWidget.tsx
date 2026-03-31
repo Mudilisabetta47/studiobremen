@@ -59,7 +59,7 @@ const SmoobuIframe = ({ url, roomTitle }: { url: string; roomTitle: string }) =>
   }, [url, containerId]);
 
   return (
-    <div className="rounded-b-lg overflow-hidden min-w-0 bg-card">
+    <div className="rounded-b-lg min-w-0 bg-card">
       <div
         id={containerId}
         ref={containerRef}
