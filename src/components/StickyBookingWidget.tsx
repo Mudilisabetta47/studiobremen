@@ -45,9 +45,23 @@ const SmoobuIframe = ({ url }: { url: string }) => {
       id={`smoobu-${id}`}
       ref={ref}
       className="min-h-[500px] rounded-b-lg overflow-hidden"
+      style={{ minWidth: 0 }}
     />
   );
 };
+
+/* Ensure Smoobu iframe date inputs are fully visible */
+const smoobuStyles = `
+  [id^="smoobu-"] input[type="date"],
+  [id^="smoobu-"] input[type="text"] {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  [id^="smoobu-"] iframe {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+`;
 
 const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size, smoobuIframeUrl }: StickyBookingWidgetProps) => {
   return (
