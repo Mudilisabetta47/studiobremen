@@ -44,7 +44,7 @@ const SmoobuIframe = ({ url }: { url: string }) => {
     <div
       id={`smoobu-${id}`}
       ref={ref}
-      className="min-h-[500px] rounded-b-lg overflow-hidden"
+      className="min-h-[800px] rounded-b-lg overflow-hidden"
       style={{ minWidth: 0 }}
     />
   );
