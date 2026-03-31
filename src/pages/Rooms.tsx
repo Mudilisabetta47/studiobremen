@@ -13,7 +13,7 @@ const Rooms = () => {
 
   const initialFilters: BookingFilters = {
     location: searchParams.get("location") || "all",
-    guests: searchParams.get("guests") || "2",
+    guests: searchParams.get("guests") || "1",
   };
 
   const [filters, setFilters] = useState<BookingFilters>(initialFilters);
