@@ -22,8 +22,8 @@ const Legal = () => {
   const page = legalContent[location.pathname] || legalContent["/impressum"];
 
   return (
-    <main className="pt-20">
-      <div className="container mx-auto px-4">
+    <main className="pt-28 md:pt-32">
+      <div className="container mx-auto px-4 pt-3">
         <Breadcrumbs items={[{ label: page.title }]} />
       </div>
       <section className="bg-gradient-hotel py-16">
