@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, Shield, Clock, Loader2 } from "lucide-react";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import RoomGallery from "@/components/RoomGallery";
 import AmenityGroups from "@/components/AmenityGroups";
