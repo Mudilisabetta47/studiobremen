@@ -65,12 +65,14 @@ const smoobuStyles = `
 
 const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size, smoobuIframeUrl }: StickyBookingWidgetProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3 }}
-      className="sticky top-24"
-    >
+    <>
+      <style>{smoobuStyles}</style>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="sticky top-24 min-w-0"
+      >
       {/* Price header */}
       <div className="bg-card border border-border rounded-t-lg p-5 border-b-0">
         <div className="flex items-baseline gap-1.5 mb-2">
