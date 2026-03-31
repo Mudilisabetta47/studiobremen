@@ -8,8 +8,10 @@ interface AmenityGroupsProps {
 const iconMap: Record<string, React.ElementType> = {
   "Bett": Bed, "King-Size-Bett": Bed, "Doppelbett": Bed,
   "Regendusche": Bath, "Badewanne": Bath, "Freistehende Badewanne": Bath,
-  "WLAN": Wifi, "Smart-TV": Tv, "Klimaanlage": Wind,
+  "WLAN": Wifi, "Smart-TV": Tv, "Klimaanlage": Wind, "TV": Tv,
   "Nespresso": Coffee, "Minibar": Coffee, "Safe": ShieldCheck,
+  "Espressomaschine": Coffee, "Wasser, Kaffee & Tee": Coffee,
+  "Parkhaus (kostenpflichtig)": ShieldCheck,
 };
 
 const groups = [
