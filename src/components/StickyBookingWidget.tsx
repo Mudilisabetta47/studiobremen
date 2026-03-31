@@ -1,4 +1,3 @@
-import { useEffect, useId, useRef } from "react";
 import { motion } from "framer-motion";
 import { Star, Users, Maximize2 } from "lucide-react";
 import BookingForm from "./BookingForm";
@@ -12,68 +11,14 @@ interface StickyBookingWidgetProps {
   smoobuIframeUrl?: string;
 }
 
-const SmoobuIframe = ({ url }: { url: string }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const id = useId().replace(/:/g, "");
-
-  useEffect(() => {
-    const init = () => {
-      if (ref.current && (window as any).BookingToolIframe) {
-        ref.current.innerHTML = "";
-        (window as any).BookingToolIframe.initialize({
-          url,
-          baseUrl: "https://login.smoobu.com",
-          target: `#smoobu-${id}`,
-        });
-      }
-    };
-
-    if ((window as any).BookingToolIframe) {
-      init();
-      return () => { if (ref.current) ref.current.innerHTML = ""; };
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://login.smoobu.com/js/Settings/BookingToolIframe.js";
-    script.onload = init;
-    document.body.appendChild(script);
-    return () => { if (ref.current) ref.current.innerHTML = ""; };
-  }, [url, id]);
-
-  return (
-    <div
-      id={`smoobu-${id}`}
-      ref={ref}
-      className="min-h-[800px] rounded-b-lg overflow-hidden"
-      style={{ minWidth: 0 }}
-    />
-  );
-};
-
-/* Ensure Smoobu iframe date inputs are fully visible */
-const smoobuStyles = `
-  [id^="smoobu-"] input[type="date"],
-  [id^="smoobu-"] input[type="text"] {
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-  [id^="smoobu-"] iframe {
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-`;
-
 const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size, smoobuIframeUrl }: StickyBookingWidgetProps) => {
   return (
-    <>
-      <style>{smoobuStyles}</style>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-        className="sticky top-24 min-w-0"
-      >
-      {/* Price header */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.3 }}
+      className="sticky top-24 min-w-0"
+    >
       <div className="bg-card border border-border rounded-t-lg p-5 border-b-0">
         <div className="flex items-baseline gap-1.5 mb-2">
           <span className="font-display text-3xl font-bold text-foreground">€{pricePerNight}</span>
@@ -91,8 +36,14 @@ const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size
       </div>
 
       {smoobuIframeUrl ? (
-        <div className="bg-card border border-border rounded-b-lg border-t-0">
-          <SmoobuIframe url={smoobuIframeUrl} />
+        <div className="bg-card border border-border rounded-b-lg border-t-0 min-w-0 overflow-hidden h-[1100px]">
+          <iframe
+            src={smoobuIframeUrl}
+            title={`Buchung für ${roomTitle}`}
+            className="w-full h-full border-0 block"
+            loading="lazy"
+            allowFullScreen
+          />
         </div>
       ) : (
         <div className="[&>div]:rounded-t-none [&>div]:border-t-0">
@@ -104,9 +55,9 @@ const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size
           />
         </div>
       )}
-      </motion.div>
-    </>
+    </motion.div>
   );
 };
 
 export default StickyBookingWidget;
+
