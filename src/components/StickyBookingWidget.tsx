@@ -16,45 +16,45 @@ const SMOOBU_SCRIPT_SRC = "https://login.smoobu.com/js/Settings/BookingToolIfram
 
 const SmoobuIframe = ({ url, roomTitle }: { url: string; roomTitle: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
   const containerId = `smoobu-${useId().replace(/:/g, "")}`;
 
   useEffect(() => {
-    let isMounted = true;
+    let cancelled = false;
 
     const init = () => {
-      if (!isMounted || !containerRef.current) return;
+      if (cancelled || initializedRef.current || !containerRef.current) return;
 
       const bookingTool = (window as any).BookingToolIframe;
       if (!bookingTool?.initialize) return;
 
-      containerRef.current.innerHTML = "";
       bookingTool.initialize({
         url,
         baseUrl: "https://login.smoobu.com",
         target: `#${containerId}`,
       });
+
+      initializedRef.current = true;
     };
 
-    let scriptEl = document.querySelector<HTMLScriptElement>(`script[src="${SMOOBU_SCRIPT_SRC}"]`);
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${SMOOBU_SCRIPT_SRC}"]`,
+    );
 
     if ((window as any).BookingToolIframe?.initialize) {
       init();
-    } else if (scriptEl) {
-      scriptEl.addEventListener("load", init);
+    } else if (existingScript) {
+      existingScript.addEventListener("load", init, { once: true });
     } else {
-      scriptEl = document.createElement("script");
-      scriptEl.src = SMOOBU_SCRIPT_SRC;
-      scriptEl.async = true;
-      scriptEl.addEventListener("load", init);
-      document.body.appendChild(scriptEl);
+      const script = document.createElement("script");
+      script.src = SMOOBU_SCRIPT_SRC;
+      script.async = true;
+      script.addEventListener("load", init, { once: true });
+      document.body.appendChild(script);
     }
 
     return () => {
-      isMounted = false;
-      scriptEl?.removeEventListener("load", init);
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
-      }
+      cancelled = true;
     };
   }, [url, containerId]);
 
@@ -64,7 +64,7 @@ const SmoobuIframe = ({ url, roomTitle }: { url: string; roomTitle: string }) =>
         id={containerId}
         ref={containerRef}
         aria-label={`Buchungstool für ${roomTitle}`}
-        className="h-[1100px] min-w-0"
+        className="h-[1100px] w-full min-w-0"
       />
     </div>
   );
@@ -73,11 +73,13 @@ const SmoobuIframe = ({ url, roomTitle }: { url: string; roomTitle: string }) =>
 const smoobuStyles = `
   [id^="smoobu-"] {
     min-width: 0 !important;
+    width: 100% !important;
   }
 
   [id^="smoobu-"] iframe {
     width: 100% !important;
     min-width: 0 !important;
+    height: 1100px !important;
     min-height: 1100px !important;
     border: 0 !important;
     display: block !important;
