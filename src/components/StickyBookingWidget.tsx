@@ -104,7 +104,8 @@ const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size
           />
         </div>
       )}
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 
