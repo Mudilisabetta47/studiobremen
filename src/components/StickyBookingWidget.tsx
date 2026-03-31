@@ -64,7 +64,7 @@ const SmoobuIframe = ({ url, roomTitle }: { url: string; roomTitle: string }) =>
         id={containerId}
         ref={containerRef}
         aria-label={`Buchungstool für ${roomTitle}`}
-        className="h-[1800px] w-full min-w-0"
+        className="h-[2000px] w-full min-w-0"
       />
     </div>
   );
