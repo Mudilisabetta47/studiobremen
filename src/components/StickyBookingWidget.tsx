@@ -79,8 +79,8 @@ const smoobuStyles = `
   [id^="smoobu-"] iframe {
     width: 100% !important;
     min-width: 0 !important;
-    height: 2050px !important;
-    min-height: 2050px !important;
+    height: 2070px !important;
+    min-height: 2070px !important;
     border: 0 !important;
     display: block !important;
   }
