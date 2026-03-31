@@ -23,7 +23,7 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
   "city-apartment": {
     headline: "Ihr Zuhause in der Ferne",
-    mood: "Modern, durchdacht und voller Charakter — unser City Apartment verbindet die Freiheit einer eigenen Wohnung mit dem Komfort eines Boutique-Hotels. Helle Räume, klare Linien und natürliche Materialien schaffen eine Atmosphäre, die sofort vertraut wirkt.",
+    mood: "Modern, durchdacht und voller Charakter — unser City Apartment verbindet die Freiheit einer eigenen Wohnung mit dem Komfort eines modernen Apartments. Helle Räume, klare Linien und natürliche Materialien schaffen eine Atmosphäre, die sofort vertraut wirkt.",
     highlight: "Kochen Sie mit frischen Zutaten vom Markt und genießen Sie Ihren Kaffee am Fenster mit Blick auf das geschäftige Treiben der Stadt.",
   },
   "stadtwohnung-nr-2": {
