@@ -58,6 +58,11 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
 };
 
+// Smoobu iframe URLs per room slug
+const smoobuIframeUrls: Record<string, string> = {
+  "stadtwohnung-nr-2": "https://login.smoobu.com/de/booking-tool/iframe/800140",
+};
+
 const RoomDetail = () => {
   const { id } = useParams();
   const { data: dbRoom, isLoading } = useRoom(id);
@@ -82,6 +87,7 @@ const RoomDetail = () => {
     : null;
 
   const atmosphere = atmosphereTexts[id ?? ""] ?? atmosphereTexts["deluxe-zimmer"];
+  const smoobuIframeUrl = smoobuIframeUrls[id ?? ""];
 
   // Use all DB images for gallery, fallback to primary image repeated
   const galleryImages = room
@@ -244,6 +250,7 @@ const RoomDetail = () => {
               pricePerNight={room.price}
               maxGuests={room.guests}
               size={room.size}
+              smoobuIframeUrl={smoobuIframeUrl}
             />
           </div>
         </div>
@@ -267,6 +274,7 @@ const RoomDetail = () => {
             pricePerNight={room.price}
             maxGuests={room.guests}
             size={room.size}
+            smoobuIframeUrl={smoobuIframeUrl}
           />
         </div>
       </div>
