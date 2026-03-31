@@ -140,7 +140,7 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { icon: MapPin, label: "Zentrale Lage", desc: "2 Standorte in Bremen" },
-                  { icon: Coffee, label: "Voll ausgestattet", desc: "Küche & Espresso" },
+                  { icon: Coffee, label: "Voll ausgestattet", desc: "Küche, Wasser, Kaffee & Tee" },
                   { icon: Wifi, label: "Highspeed WLAN", desc: "Kostenfrei" },
                   { icon: ShieldCheck, label: "Verifiziert", desc: "Superhost bei Airbnb" },
                 ].map((feat, i) => (

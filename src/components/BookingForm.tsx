@@ -521,7 +521,7 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
 
                 {/* Trust badges */}
                 <div className="flex flex-wrap gap-3 text-xs font-body text-muted-foreground">
-                  <span className="flex items-center gap-1"><Shield size={12} className="text-accent" /> Kostenlose Stornierung bis 48h</span>
+                  <span className="flex items-center gap-1"><Shield size={12} className="text-accent" /> Kostenlose Stornierung bis 24h</span>
                   <span className="flex items-center gap-1"><Clock size={12} className="text-accent" /> Sofortige Bestätigung</span>
                   <span className="flex items-center gap-1"><MapPin size={12} className="text-accent" /> Zentrale Lage</span>
                 </div>

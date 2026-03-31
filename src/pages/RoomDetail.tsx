@@ -43,8 +43,8 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
   "city-apartment-no5": {
     headline: "Komfort trifft Zentralität",
-    mood: "Ein modernes Apartment mit Kingsize-Bett und durchdachtem Design am Rembertiring. Hier finden Geschäftsreisende den perfekten Arbeitsplatz und Urlauber die ideale Basis für Bremen-Erkundungen. Voll ausgestattete Küche und Smart-TV inklusive.",
-    highlight: "Die perfekte Verbindung aus Komfort und Lage — entdecken Sie Bremen entspannt und stilvoll.",
+    mood: "Ein modernes Apartment mit Kingsize-Bett und durchdachtem Design am Rembertiring. Nur wenige Schritte zum Hauptbahnhof! Hier finden Geschäftsreisende den perfekten Arbeitsplatz und Urlauber die ideale Basis für Bremen-Erkundungen. Voll ausgestattete Küche und Smart-TV inklusive.",
+    highlight: "Wenige Schritte zum Bahnhof — die perfekte Verbindung aus Komfort und zentraler Lage.",
   },
   "schlachte-studio-no4": {
     headline: "Leben an der Weserpromenade",
