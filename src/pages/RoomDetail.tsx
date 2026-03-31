@@ -87,6 +87,7 @@ const RoomDetail = () => {
     : null;
 
   const atmosphere = atmosphereTexts[id ?? ""] ?? atmosphereTexts["deluxe-zimmer"];
+  const smoobuIframeUrl = smoobuIframeUrls[id ?? ""];
 
   // Use all DB images for gallery, fallback to primary image repeated
   const galleryImages = room
