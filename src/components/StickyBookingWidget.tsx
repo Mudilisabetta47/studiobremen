@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { motion } from "framer-motion";
 import { Star, Users, Maximize2 } from "lucide-react";
 import BookingForm from "./BookingForm";
@@ -13,33 +13,37 @@ interface StickyBookingWidgetProps {
 }
 
 const SmoobuIframe = ({ url }: { url: string }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const id = useId().replace(/:/g, "");
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    const script = document.createElement("script");
-    script.src = "https://login.smoobu.com/js/Settings/BookingToolIframe.js";
-    script.onload = () => {
-      if ((window as any).BookingToolIframe) {
+    const init = () => {
+      if (ref.current && (window as any).BookingToolIframe) {
+        ref.current.innerHTML = "";
         (window as any).BookingToolIframe.initialize({
           url,
           baseUrl: "https://login.smoobu.com",
-          target: "#smoobu-iframe-container",
+          target: `#smoobu-${id}`,
         });
       }
     };
-    document.body.appendChild(script);
 
-    return () => {
-      script.remove();
-    };
-  }, [url]);
+    if ((window as any).BookingToolIframe) {
+      init();
+      return () => { if (ref.current) ref.current.innerHTML = ""; };
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://login.smoobu.com/js/Settings/BookingToolIframe.js";
+    script.onload = init;
+    document.body.appendChild(script);
+    return () => { if (ref.current) ref.current.innerHTML = ""; };
+  }, [url, id]);
 
   return (
     <div
-      id="smoobu-iframe-container"
-      ref={containerRef}
+      id={`smoobu-${id}`}
+      ref={ref}
       className="min-h-[500px] rounded-b-lg overflow-hidden"
     />
   );
