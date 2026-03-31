@@ -75,10 +75,10 @@ const Header = () => {
         <div className="container mx-auto flex items-center justify-between h-[72px] px-4">
           {/* Logo */}
           <Link to="/" className="relative group">
-            <span className="font-display text-2xl font-bold text-primary-foreground tracking-[0.15em]">
-              HOTEL
+            <span className="font-display text-xl font-bold text-primary-foreground tracking-[0.1em]">
+              IHR ZUHAUSE IN
             </span>
-            <span className="font-display text-2xl font-bold text-accent tracking-[0.15em] ml-2">
+            <span className="font-display text-xl font-bold text-accent tracking-[0.1em] ml-2">
               BREMEN
             </span>
             <span className={cn(

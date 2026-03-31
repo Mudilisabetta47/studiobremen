@@ -62,7 +62,7 @@ const Index = () => {
               { icon: Key, title: "Selbst-Check-in", desc: "Flexibel & kontaktlos" },
               { icon: MapPin, title: "Zentrale Lage", desc: "5 Min. zum Hauptbahnhof" },
               { icon: Wifi, title: "Kostenloses WLAN", desc: "Highspeed in jeder Wohnung" },
-              { icon: CheckCircle2, title: "Kostenlos stornierbar", desc: "Bis 48h vor Anreise" },
+              { icon: CheckCircle2, title: "Kostenlos stornierbar", desc: "Bis 24h vor Anreise" },
             ].map((usp, i) => (
               <motion.div
                 key={usp.title}
@@ -140,7 +140,7 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { icon: MapPin, label: "Zentrale Lage", desc: "2 Standorte in Bremen" },
-                  { icon: Coffee, label: "Voll ausgestattet", desc: "Küche & Espresso" },
+                  { icon: Coffee, label: "Voll ausgestattet", desc: "Küche, Wasser, Kaffee & Tee" },
                   { icon: Wifi, label: "Highspeed WLAN", desc: "Kostenfrei" },
                   { icon: ShieldCheck, label: "Verifiziert", desc: "Superhost bei Airbnb" },
                 ].map((feat, i) => (

@@ -54,7 +54,7 @@ const HeroSection = () => {
             >
               <span className="w-12 h-[1px] bg-accent" />
               <span className="font-body text-accent text-[11px] tracking-[0.35em] uppercase font-semibold">
-                Boutique Hotel · Bremen
+                Apartments · Bremen
               </span>
             </motion.div>
 
@@ -65,7 +65,7 @@ const HeroSection = () => {
               transition={{ duration: 0.9, delay: 0.5 }}
               className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-primary-foreground leading-[0.95] mb-6"
             >
-              Wo Eleganz
+              Wo Gemütlichkeit
               <br />
               <span className="italic font-normal text-accent">zuhause</span> ist
             </motion.h1>

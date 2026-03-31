@@ -8,15 +8,17 @@ interface AmenityGroupsProps {
 const iconMap: Record<string, React.ElementType> = {
   "Bett": Bed, "King-Size-Bett": Bed, "Doppelbett": Bed,
   "Regendusche": Bath, "Badewanne": Bath, "Freistehende Badewanne": Bath,
-  "WLAN": Wifi, "Smart-TV": Tv, "Klimaanlage": Wind,
+  "WLAN": Wifi, "Smart-TV": Tv, "Klimaanlage": Wind, "TV": Tv,
   "Nespresso": Coffee, "Minibar": Coffee, "Safe": ShieldCheck,
+  "Espressomaschine": Coffee, "Wasser, Kaffee & Tee": Coffee,
+  "Parkhaus (kostenpflichtig)": ShieldCheck,
 };
 
 const groups = [
   { label: "Schlafzimmer", icon: Bed, keywords: ["Bett", "Bademantel", "Pantoffeln", "Bettwäsche"] },
   { label: "Badezimmer", icon: Bath, keywords: ["Dusche", "Regendusche", "Badewanne", "Bad"] },
-  { label: "Wohnbereich", icon: Tv, keywords: ["TV", "Smart-TV", "Wohnbereich", "Schreibtisch", "Küche", "Geschirrspüler", "Waschmaschine"] },
-  { label: "Service & Komfort", icon: ConciergeBell, keywords: ["WLAN", "Minibar", "Nespresso", "Klimaanlage", "Safe"] },
+  { label: "Wohnbereich", icon: Tv, keywords: ["TV", "Smart-TV", "Wohnbereich", "Schreibtisch", "Küche", "Geschirrspüler", "Waschmaschine", "Arbeitsplatz", "Kühlschrank"] },
+  { label: "Service & Komfort", icon: ConciergeBell, keywords: ["WLAN", "Minibar", "Nespresso", "Klimaanlage", "Safe", "Espressomaschine", "Aufzug", "Föhn", "Selbst-Check-in", "Langzeitaufenthalte", "Ladestation", "Parkhaus", "Wasser, Kaffee", "Am Wasser", "Balkon"] },
 ];
 
 const AmenityGroups = ({ amenities }: AmenityGroupsProps) => {

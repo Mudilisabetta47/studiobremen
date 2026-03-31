@@ -9,10 +9,10 @@ const Footer = () => {
           {/* Brand */}
           <div>
             <h3 className="font-display text-2xl font-bold mb-4">
-              HOTEL <span className="text-accent">BREMEN</span>
+              IHR ZUHAUSE IN <span className="text-accent">BREMEN</span>
             </h3>
             <p className="font-body text-primary-foreground/70 text-sm leading-relaxed">
-              Ihr Zuhause in Bremen. Erleben Sie erstklassigen Komfort und norddeutsche Gastfreundschaft in unserem Boutique-Hotel.
+              Ihr Zuhause in Bremen. Erleben Sie erstklassigen Komfort und norddeutsche Gastfreundschaft in unseren Apartments.
             </p>
           </div>
 

@@ -23,7 +23,7 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
   "city-apartment": {
     headline: "Ihr Zuhause in der Ferne",
-    mood: "Modern, durchdacht und voller Charakter — unser City Apartment verbindet die Freiheit einer eigenen Wohnung mit dem Komfort eines Boutique-Hotels. Helle Räume, klare Linien und natürliche Materialien schaffen eine Atmosphäre, die sofort vertraut wirkt.",
+    mood: "Modern, durchdacht und voller Charakter — unser City Apartment verbindet die Freiheit einer eigenen Wohnung mit dem Komfort eines modernen Apartments. Helle Räume, klare Linien und natürliche Materialien schaffen eine Atmosphäre, die sofort vertraut wirkt.",
     highlight: "Kochen Sie mit frischen Zutaten vom Markt und genießen Sie Ihren Kaffee am Fenster mit Blick auf das geschäftige Treiben der Stadt.",
   },
   "stadtwohnung-nr-2": {
@@ -43,8 +43,8 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
   "city-apartment-no5": {
     headline: "Komfort trifft Zentralität",
-    mood: "Ein modernes Apartment mit Kingsize-Bett und durchdachtem Design am Rembertiring. Hier finden Geschäftsreisende den perfekten Arbeitsplatz und Urlauber die ideale Basis für Bremen-Erkundungen. Voll ausgestattete Küche und Smart-TV inklusive.",
-    highlight: "Die perfekte Verbindung aus Komfort und Lage — entdecken Sie Bremen entspannt und stilvoll.",
+    mood: "Ein modernes Apartment mit Kingsize-Bett und durchdachtem Design am Rembertiring. Nur wenige Schritte zum Hauptbahnhof! Hier finden Geschäftsreisende den perfekten Arbeitsplatz und Urlauber die ideale Basis für Bremen-Erkundungen. Voll ausgestattete Küche und Smart-TV inklusive.",
+    highlight: "Wenige Schritte zum Bahnhof — die perfekte Verbindung aus Komfort und zentraler Lage.",
   },
   "schlachte-studio-no4": {
     headline: "Leben an der Weserpromenade",
@@ -217,7 +217,7 @@ const RoomDetail = () => {
                 {[
                   { label: "Check-in", value: "Ab 15:00 Uhr" },
                   { label: "Check-out", value: "Bis 11:00 Uhr" },
-                  { label: "Stornierung", value: "Kostenlos bis 48h vorher" },
+                  { label: "Stornierung", value: "Kostenlos bis 24h vorher" },
                 ].map((item) => (
                   <div key={item.label} className="bg-card border border-border rounded-lg p-4">
                     <p className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1">{item.label}</p>
