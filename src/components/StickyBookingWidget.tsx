@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Star, Users, Maximize2 } from "lucide-react";
 import BookingForm from "./BookingForm";
@@ -8,9 +9,43 @@ interface StickyBookingWidgetProps {
   pricePerNight: number;
   maxGuests: number;
   size: string;
+  smoobuIframeUrl?: string;
 }
 
-const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size }: StickyBookingWidgetProps) => {
+const SmoobuIframe = ({ url }: { url: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const script = document.createElement("script");
+    script.src = "https://login.smoobu.com/js/Settings/BookingToolIframe.js";
+    script.onload = () => {
+      if ((window as any).BookingToolIframe) {
+        (window as any).BookingToolIframe.initialize({
+          url,
+          baseUrl: "https://login.smoobu.com",
+          target: "#smoobu-iframe-container",
+        });
+      }
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [url]);
+
+  return (
+    <div
+      id="smoobu-iframe-container"
+      ref={containerRef}
+      className="min-h-[500px] rounded-b-lg overflow-hidden"
+    />
+  );
+};
+
+const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size, smoobuIframeUrl }: StickyBookingWidgetProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,15 +70,20 @@ const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size
         </div>
       </div>
 
-      {/* Booking form */}
-      <div className="[&>div]:rounded-t-none [&>div]:border-t-0">
-        <BookingForm
-          roomId={roomId}
-          roomTitle={roomTitle}
-          pricePerNight={pricePerNight}
-          maxGuests={maxGuests}
-        />
-      </div>
+      {smoobuIframeUrl ? (
+        <div className="bg-card border border-border rounded-b-lg border-t-0">
+          <SmoobuIframe url={smoobuIframeUrl} />
+        </div>
+      ) : (
+        <div className="[&>div]:rounded-t-none [&>div]:border-t-0">
+          <BookingForm
+            roomId={roomId}
+            roomTitle={roomTitle}
+            pricePerNight={pricePerNight}
+            maxGuests={maxGuests}
+          />
+        </div>
+      )}
     </motion.div>
   );
 };
