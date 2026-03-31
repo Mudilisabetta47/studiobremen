@@ -274,6 +274,7 @@ const RoomDetail = () => {
             pricePerNight={room.price}
             maxGuests={room.guests}
             size={room.size}
+            smoobuIframeUrl={smoobuIframeUrl}
           />
         </div>
       </div>
