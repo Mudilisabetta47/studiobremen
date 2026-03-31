@@ -11,25 +11,46 @@ interface Review {
 
 const staticReviews: Review[] = [
   {
-    name: "Anna K.",
-    date: "Februar 2026",
+    name: "Marco S.",
+    date: "März 2026",
     rating: 5,
-    text: "Ein wunderbarer Aufenthalt! Das Zimmer war makellos, das Personal herzlich und das Frühstück ein Traum. Man spürt die Liebe zum Detail überall.",
-    country: "Schweiz",
-  },
-  {
-    name: "Thomas M.",
-    date: "Januar 2026",
-    rating: 5,
-    text: "Perfekte Lage, erstklassiger Service. Die Bettwäsche war unglaublich weich und der Blick auf die Stadt atemberaubend. Komme definitiv wieder.",
+    text: "Super Lage, alles sauber und modern eingerichtet. Der Selbst-Check-in hat reibungslos funktioniert. Kaffee und Wasser waren schon da – sehr aufmerksam! Komme gerne wieder.",
     country: "Deutschland",
   },
   {
-    name: "Sophie L.",
+    name: "Lisa & Jan",
+    date: "Februar 2026",
+    rating: 5,
+    text: "Perfekt für unseren Städtetrip! Die Wohnung war genau wie auf den Bildern, super zentral und wirklich gemütlich. Die Küche hat alles was man braucht.",
+    country: "Deutschland",
+  },
+  {
+    name: "Émilie R.",
+    date: "Januar 2026",
+    rating: 5,
+    text: "Très bel appartement, propre et bien situé. La communication était excellente et le check-in très facile. Je recommande vivement!",
+    country: "Frankreich",
+  },
+  {
+    name: "Andreas W.",
     date: "Dezember 2025",
-    rating: 4,
-    text: "Sehr schönes Boutique-Hotel mit viel Charme. Die Atmosphäre ist ruhig und elegant. Ideal für einen Wochenend-Trip.",
+    rating: 5,
+    text: "Ich bin beruflich oft in Bremen und buche immer hier. Schnelles WLAN, ruhige Lage trotz Zentrum und ein bequemes Bett. Top Preis-Leistung!",
+    country: "Deutschland",
+  },
+  {
+    name: "Sarah K.",
+    date: "November 2025",
+    rating: 5,
+    text: "Die Schlachte-Wohnung ist ein Traum! Direkt an der Weser, super Restaurants in der Nähe. Die Espressomaschine war das Highlight am Morgen.",
     country: "Österreich",
+  },
+  {
+    name: "Tom B.",
+    date: "Oktober 2025",
+    rating: 4,
+    text: "Sehr gute Unterkunft, sauber und modern. Lage direkt am Bahnhof ist ideal. Einziger Wunsch: ein zweites Kopfkissen wäre super gewesen.",
+    country: "Niederlande",
   },
 ];
 
