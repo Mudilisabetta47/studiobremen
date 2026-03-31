@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, Shield, Clock, Loader2 } from "lucide-react";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import RoomGallery from "@/components/RoomGallery";
 import AmenityGroups from "@/components/AmenityGroups";
@@ -120,14 +121,11 @@ const RoomDetail = () => {
   return (
     <main className="pt-20">
       {/* Breadcrumb */}
-      <div className="container mx-auto px-4 py-4">
-        <nav className="flex items-center gap-2 text-sm font-body text-muted-foreground">
-          <Link to="/" className="hover:text-accent transition-colors">Home</Link>
-          <span>/</span>
-          <Link to="/zimmer" className="hover:text-accent transition-colors">Zimmer</Link>
-          <span>/</span>
-          <span className="text-foreground font-medium">{room.title}</span>
-        </nav>
+      <div className="container mx-auto px-4">
+        <Breadcrumbs items={[
+          { label: "Zimmer", to: "/zimmer" },
+          { label: room.title },
+        ]} />
       </div>
 
       {/* Gallery */}

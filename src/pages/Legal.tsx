@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const legalContent: Record<string, { title: string; content: string }> = {
   "/impressum": {
@@ -22,6 +23,9 @@ const Legal = () => {
 
   return (
     <main className="pt-20">
+      <div className="container mx-auto px-4">
+        <Breadcrumbs items={[{ label: page.title }]} />
+      </div>
       <section className="bg-gradient-hotel py-16">
         <div className="container mx-auto px-4 text-center">
           <motion.h1

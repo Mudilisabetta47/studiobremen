@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import RoomCard from "@/components/RoomCard";
 import BookingWidget, { BookingFilters } from "@/components/BookingWidget";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { useRooms } from "@/hooks/useRooms";
 import { rooms as staticRooms } from "@/data/rooms";
 import { Loader2 } from "lucide-react";
@@ -46,6 +47,9 @@ const Rooms = () => {
 
   return (
     <main className="pt-20">
+      <div className="container mx-auto px-4">
+        <Breadcrumbs items={[{ label: "Zimmer & Apartments" }]} />
+      </div>
       <section className="bg-gradient-hotel py-20">
         <div className="container mx-auto px-4 text-center">
           <motion.div
