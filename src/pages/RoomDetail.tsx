@@ -217,7 +217,7 @@ const RoomDetail = () => {
                 {[
                   { label: "Check-in", value: "Ab 15:00 Uhr" },
                   { label: "Check-out", value: "Bis 11:00 Uhr" },
-                  { label: "Stornierung", value: "Kostenlos bis 48h vorher" },
+                  { label: "Stornierung", value: "Kostenlos bis 24h vorher" },
                 ].map((item) => (
                   <div key={item.label} className="bg-card border border-border rounded-lg p-4">
                     <p className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1">{item.label}</p>
