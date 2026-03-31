@@ -59,7 +59,7 @@ const SmoobuIframe = ({ url, roomTitle }: { url: string; roomTitle: string }) =>
   }, [url, containerId]);
 
   return (
-    <div className="rounded-b-lg overflow-y-auto overflow-x-hidden min-w-0 bg-card max-h-[75vh]">
+    <div className="rounded-b-lg overflow-hidden min-w-0 bg-card">
       <div
         id={containerId}
         ref={containerRef}
@@ -92,7 +92,7 @@ const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.3 }}
-      className="sticky top-24 min-w-0"
+      className="min-w-0"
     >
       <style>{smoobuStyles}</style>
 
