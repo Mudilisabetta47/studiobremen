@@ -4,10 +4,11 @@ import { useLocation } from "react-router-dom";
 export default function ScrollToTop() {
   const { pathname } = useLocation();
   useLayoutEffect(() => {
-    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
-    document.documentElement.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-    document.body.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    // Scroll all possible containers
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    document.querySelector("main")?.scrollTo(0, 0);
   }, [pathname]);
   return null;
 }
