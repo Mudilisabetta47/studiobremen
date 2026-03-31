@@ -45,18 +45,34 @@ const SmoobuIframe = ({ url }: { url: string }) => {
       id={`smoobu-${id}`}
       ref={ref}
       className="min-h-[500px] rounded-b-lg overflow-hidden"
+      style={{ minWidth: 0 }}
     />
   );
 };
 
+/* Ensure Smoobu iframe date inputs are fully visible */
+const smoobuStyles = `
+  [id^="smoobu-"] input[type="date"],
+  [id^="smoobu-"] input[type="text"] {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  [id^="smoobu-"] iframe {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+`;
+
 const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size, smoobuIframeUrl }: StickyBookingWidgetProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3 }}
-      className="sticky top-24"
-    >
+    <>
+      <style>{smoobuStyles}</style>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="sticky top-24 min-w-0"
+      >
       {/* Price header */}
       <div className="bg-card border border-border rounded-t-lg p-5 border-b-0">
         <div className="flex items-baseline gap-1.5 mb-2">
@@ -88,7 +104,8 @@ const StickyBookingWidget = ({ roomId, roomTitle, pricePerNight, maxGuests, size
           />
         </div>
       )}
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 
