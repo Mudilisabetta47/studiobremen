@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import GuestLogin from "./pages/GuestLogin";
 import GuestRegister from "./pages/GuestRegister";
 import MyBookings from "./pages/MyBookings";
+import BookingConfirmed from "./pages/BookingConfirmed";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
