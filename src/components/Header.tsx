@@ -126,6 +126,13 @@ const Header = () => {
             {/* Divider */}
             <div className="w-[1px] h-5 bg-primary-foreground/15 mx-3" />
 
+            <Link to={isLoggedIn ? "/meine-buchungen" : "/login"}>
+              <Button variant="ghost" size="sm" className="px-3 text-[11px] tracking-[0.15em] text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5">
+                <User size={14} className="mr-1.5" />
+                {isLoggedIn ? "Mein Konto" : "Login"}
+              </Button>
+            </Link>
+
             <Link to="/zimmer">
               <Button variant="hero" size="sm" className="px-6 rounded-full text-[11px] tracking-[0.15em]">
                 Jetzt buchen
