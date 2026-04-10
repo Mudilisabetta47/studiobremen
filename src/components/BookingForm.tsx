@@ -113,6 +113,10 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
       const checkOutStr = format(values.check_out, "yyyy-MM-dd");
       const action = isSandboxMode ? "create-booking-sandbox" : "create-booking";
 
+      // Get current user id if logged in
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id ?? null;
+
       const { data, error } = await supabase.functions.invoke("smoobu-sync", {
         body: {
           action,
@@ -126,6 +130,7 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
           guests_count: values.guests_count,
           notes: values.notes || "",
           total_price: totalPrice,
+          user_id: userId,
         },
       });
 
