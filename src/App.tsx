@@ -11,6 +11,9 @@ import RoomDetail from "./pages/RoomDetail";
 import Contact from "./pages/Contact";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
+import GuestLogin from "./pages/GuestLogin";
+import GuestRegister from "./pages/GuestRegister";
+import MyBookings from "./pages/MyBookings";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -38,6 +41,11 @@ const App = () => (
           <Route path="/impressum" element={<Layout><Legal /></Layout>} />
           <Route path="/datenschutz" element={<Layout><Legal /></Layout>} />
           <Route path="/agb" element={<Layout><Legal /></Layout>} />
+
+          {/* Guest auth routes */}
+          <Route path="/login" element={<GuestLogin />} />
+          <Route path="/registrieren" element={<GuestRegister />} />
+          <Route path="/meine-buchungen" element={<MyBookings />} />
 
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
