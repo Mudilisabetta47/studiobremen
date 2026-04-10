@@ -47,6 +47,7 @@ const App = () => (
           <Route path="/login" element={<GuestLogin />} />
           <Route path="/registrieren" element={<GuestRegister />} />
           <Route path="/meine-buchungen" element={<MyBookings />} />
+          <Route path="/buchung-bestaetigt" element={<BookingConfirmed />} />
 
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
