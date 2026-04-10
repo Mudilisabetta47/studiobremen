@@ -142,6 +142,29 @@ const BookingForm = ({ roomId, roomTitle, pricePerNight, maxGuests, smoobuApartm
         return;
       }
 
+      // If not sandbox, redirect to Stripe payment
+      if (!data.sandbox && data.booking?.id) {
+        try {
+          const { data: paymentData, error: paymentError } = await supabase.functions.invoke("create-payment", {
+            body: {
+              booking_id: data.booking.id,
+              room_title: roomTitle,
+              total_price: totalPrice,
+              nights,
+              guest_email: values.guest_email,
+            },
+          });
+
+          if (!paymentError && paymentData?.url) {
+            window.location.href = paymentData.url;
+            return;
+          }
+        } catch (stripeErr) {
+          console.warn("Stripe redirect failed, showing confirmation:", stripeErr);
+        }
+      }
+
+      // Fallback: show confirmation (sandbox or Stripe unavailable)
       const qr = JSON.stringify({
         booking_id: data.booking?.id,
         guest: values.guest_name,
