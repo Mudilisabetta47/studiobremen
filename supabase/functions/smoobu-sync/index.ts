@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     if (action === "create-booking" || action === "create-booking-sandbox") {
       const {
         apartment_id, check_in, check_out, guest_name, guest_email,
-        guest_phone, guests_count, room_id, notes, total_price,
+        guest_phone, guests_count, room_id, notes, total_price, user_id,
       } = payload;
 
       // 1. DB-level double-booking check (always, even sandbox)
@@ -95,6 +95,7 @@ Deno.serve(async (req) => {
           notes: notes || "[SANDBOX] Testbuchung",
           status: "confirmed",
           total_price: total_price ?? null,
+          user_id: user_id || null,
           smoobu_reservation_id: `sandbox_${crypto.randomUUID().slice(0, 8)}`,
           qr_code_data: JSON.stringify({
             booking_id: "sandbox",
@@ -175,6 +176,7 @@ Deno.serve(async (req) => {
         notes: notes || null,
         status: smoobuReservationId ? "confirmed" : "pending",
         total_price: total_price ?? null,
+        user_id: user_id || null,
         smoobu_reservation_id: smoobuReservationId,
         qr_code_data: JSON.stringify({
           booking_id: "pending",
