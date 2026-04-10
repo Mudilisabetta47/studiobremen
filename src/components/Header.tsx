@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
-import { Menu, X, Phone, Mail, MapPin } from "lucide-react";
+import { Menu, X, Phone, Mail, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const navLinks = [
   { to: "/", label: "Startseite" },
@@ -14,9 +15,20 @@ const navLinks = [
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === "/";
   const { scrollY } = useScroll();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 50);
@@ -113,6 +125,13 @@ const Header = () => {
 
             {/* Divider */}
             <div className="w-[1px] h-5 bg-primary-foreground/15 mx-3" />
+
+            <Link to={isLoggedIn ? "/meine-buchungen" : "/login"}>
+              <Button variant="ghost" size="sm" className="px-3 text-[11px] tracking-[0.15em] text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5">
+                <User size={14} className="mr-1.5" />
+                {isLoggedIn ? "Mein Konto" : "Login"}
+              </Button>
+            </Link>
 
             <Link to="/zimmer">
               <Button variant="hero" size="sm" className="px-6 rounded-full text-[11px] tracking-[0.15em]">
