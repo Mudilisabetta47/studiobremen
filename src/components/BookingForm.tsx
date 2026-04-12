@@ -25,11 +25,17 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
 const bookingSchema = z.object({
   guest_name: z.string().trim().min(2, "Name muss mindestens 2 Zeichen haben").max(100),
   guest_email: z.string().trim().email("Ungültige E-Mail-Adresse").max(255),
   guest_phone: z.string().trim().max(30).optional(),
-  check_in: z.date({ required_error: "Bitte Anreisedatum wählen" }),
+  check_in: z.date({ required_error: "Bitte Anreisedatum wählen" }).refine(
+    (date) => { const t = new Date(); t.setHours(0,0,0,0); return date >= t; },
+    { message: "Anreise darf nicht in der Vergangenheit liegen" }
+  ),
   check_out: z.date({ required_error: "Bitte Abreisedatum wählen" }),
   guests_count: z.coerce.number().min(1).max(10),
   notes: z.string().trim().max(500).optional(),
