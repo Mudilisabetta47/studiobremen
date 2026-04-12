@@ -6,7 +6,7 @@ import BookingWidget, { BookingFilters } from "@/components/BookingWidget";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useRooms } from "@/hooks/useRooms";
 import { rooms as staticRooms } from "@/data/rooms";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin, SlidersHorizontal } from "lucide-react";
 
 const Rooms = () => {
   const { data: dbRooms, isLoading } = useRooms();
@@ -46,36 +46,46 @@ const Rooms = () => {
   }, [dbRooms, filters]);
 
   return (
-    <main className="pt-28 md:pt-32">
-      <div className="container mx-auto px-4 pt-3">
+    <main className="pt-24 md:pt-28 bg-background">
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-2 mb-6">
         <Breadcrumbs items={[{ label: "Apartments" }]} />
       </div>
 
-      <section className="bg-primary py-24">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            <span className="font-body text-[10px] tracking-[0.4em] uppercase text-accent font-medium">
-              Unterkünfte
-            </span>
-            <h1 className="font-display text-4xl md:text-5xl font-semibold text-primary-foreground mt-3 mb-4">
-              Unsere Apartments
-            </h1>
-            <p className="font-body text-primary-foreground/50 max-w-md mx-auto text-sm leading-relaxed">
-              Wählen Sie aus unseren komfortablen Apartments – jedes mit eigenem Charakter.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      {/* Page header — clean Airbnb style */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+            Unterkünfte in Bremen
+          </h1>
+          <p className="font-body text-muted-foreground text-base">
+            {displayRooms.length} Apartment{displayRooms.length !== 1 ? "s" : ""} verfügbar
+          </p>
+        </motion.div>
+      </div>
 
-      <section className="container mx-auto px-4 -mt-8 relative z-10 mb-16">
-        <BookingWidget onSearch={setFilters} defaultFilters={initialFilters} />
-      </section>
+      {/* Filter bar */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          <BookingWidget onSearch={setFilters} defaultFilters={initialFilters} />
+        </motion.div>
+      </div>
 
-      <section className="container mx-auto px-4 pb-28">
+      {/* Divider */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+        <div className="border-b border-border" />
+      </div>
+
+      {/* Room grid */}
+      <section className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl py-10 pb-28">
         {isLoading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="animate-spin text-accent" size={28} />
@@ -87,7 +97,7 @@ const Rooms = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayRooms.map((room, index) => (
               <RoomCard key={room.id} {...room} index={index} />
             ))}
