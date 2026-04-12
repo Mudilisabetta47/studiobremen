@@ -23,7 +23,7 @@ const RoomCard = ({ id, title, description, price, image, guests, size, index, l
       transition={{ duration: 0.7, delay: index * 0.12 }}
     >
       <Link to={`/zimmer/${id}`} className="group block">
-        <div className="overflow-hidden bg-card">
+        <div className="overflow-hidden bg-card rounded-sm shadow-md hover:shadow-xl transition-shadow duration-500">
           {/* Image */}
           <div className="relative aspect-[4/3] overflow-hidden">
             <img
@@ -31,20 +31,19 @@ const RoomCard = ({ id, title, description, price, image, guests, size, index, l
               alt={title}
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {/* Price badge */}
+            <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-3 py-1.5 rounded-sm">
+              <span className="font-body text-[9px] uppercase tracking-wider text-primary-foreground/60 block">ab</span>
+              <span className="font-display text-lg font-semibold">€{price}</span>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="pt-5 pb-2">
-            <div className="flex items-start justify-between mb-1">
-              <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-accent transition-colors duration-300">
-                {title}
-              </h3>
-              <div className="text-right shrink-0 ml-4">
-                <span className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">ab</span>
-                <span className="font-display text-lg font-semibold text-foreground ml-1">€{price}</span>
-              </div>
-            </div>
+          <div className="p-5">
+            <h3 className="font-display text-lg font-semibold text-card-foreground group-hover:text-accent transition-colors duration-300 mb-1">
+              {title}
+            </h3>
 
             {location && (
               <p className="flex items-center gap-1 text-[11px] text-muted-foreground font-body mb-2">
