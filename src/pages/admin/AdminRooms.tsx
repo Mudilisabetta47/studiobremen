@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, BedDouble, ImageIcon, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, BedDouble, ImageIcon, MapPin, Link2, X, Star } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Room = Tables<"rooms">;
+type RoomImage = { id: string; image_url: string; is_primary: boolean | null; alt_text: string | null; sort_order: number | null };
 
 const AdminRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -22,7 +23,11 @@ const AdminRooms = () => {
     title: "", slug: "", description: "", long_description: "",
     price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "",
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState("");
+  const [existingImages, setExistingImages] = useState<RoomImage[]>([]);
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   const fetchRooms = async () => {
@@ -33,27 +38,72 @@ const AdminRooms = () => {
 
   useEffect(() => { fetchRooms(); }, []);
 
+  const fetchExistingImages = async (roomId: string) => {
+    const { data } = await supabase.from("room_images").select("*").eq("room_id", roomId).order("sort_order");
+    setExistingImages((data ?? []) as RoomImage[]);
+  };
+
   const openCreate = () => {
     setEditingRoom(null);
     setForm({ title: "", slug: "", description: "", long_description: "", price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "Bremen-Mitte" });
-    setImageFile(null);
+    setImageFiles([]);
+    setImageUrls([]);
+    setNewImageUrl("");
+    setExistingImages([]);
     setDialogOpen(true);
   };
 
-  const openEdit = (room: Room) => {
+  const openEdit = async (room: Room) => {
     setEditingRoom(room);
     setForm({
       title: room.title, slug: room.slug, description: room.description ?? "",
       long_description: room.long_description ?? "", price_per_night: room.price_per_night,
       max_guests: room.max_guests, size: room.size ?? "",
       amenities: (room.amenities ?? []).join(", "),
-      location: (room as any).location ?? "Bremen-Mitte",
+      location: room.location ?? "Bremen-Mitte",
     });
-    setImageFile(null);
+    setImageFiles([]);
+    setImageUrls([]);
+    setNewImageUrl("");
+    await fetchExistingImages(room.id);
     setDialogOpen(true);
   };
 
+  const addImageUrl = () => {
+    const url = newImageUrl.trim();
+    if (!url) return;
+    if (!/^https?:\/\/.+/.test(url)) {
+      toast({ title: "Ungültige URL", description: "Bitte eine gültige Bild-URL eingeben.", variant: "destructive" });
+      return;
+    }
+    setImageUrls(prev => [...prev, url]);
+    setNewImageUrl("");
+  };
+
+  const removeImageUrl = (index: number) => {
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeFile = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const deleteExistingImage = async (imageId: string) => {
+    await supabase.from("room_images").delete().eq("id", imageId);
+    setExistingImages(prev => prev.filter(img => img.id !== imageId));
+    toast({ title: "Bild entfernt" });
+  };
+
+  const setPrimaryImage = async (imageId: string, roomId: string) => {
+    // unset all, then set the chosen one
+    await supabase.from("room_images").update({ is_primary: false }).eq("room_id", roomId);
+    await supabase.from("room_images").update({ is_primary: true }).eq("id", imageId);
+    setExistingImages(prev => prev.map(img => ({ ...img, is_primary: img.id === imageId })));
+    toast({ title: "Hauptbild gesetzt" });
+  };
+
   const handleSave = async () => {
+    setSaving(true);
     const amenitiesArr = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
     const payload = {
       title: form.title,
@@ -68,26 +118,46 @@ const AdminRooms = () => {
 
     if (editingRoom) {
       const { error } = await supabase.from("rooms").update(payload).eq("id", editingRoom.id);
-      if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); return; }
+      if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); setSaving(false); return; }
     } else {
       const { data, error } = await supabase.from("rooms").insert(payload).select().single();
-      if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); return; }
+      if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); setSaving(false); return; }
       roomId = data.id;
     }
 
-    if (imageFile && roomId) {
-      const ext = imageFile.name.split(".").pop();
-      const path = `${roomId}/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("room-images").upload(path, imageFile);
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage.from("room-images").getPublicUrl(path);
+    if (roomId) {
+      const isFirst = existingImages.length === 0 && imageUrls.length === 0 && imageFiles.length === 0;
+
+      // Save URL-based images
+      for (let i = 0; i < imageUrls.length; i++) {
         await supabase.from("room_images").insert({
-          room_id: roomId, image_url: urlData.publicUrl, is_primary: true, alt_text: form.title,
+          room_id: roomId,
+          image_url: imageUrls[i],
+          is_primary: isFirst && i === 0,
+          alt_text: form.title,
         });
+      }
+
+      // Upload file-based images
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        const ext = file.name.split(".").pop();
+        const path = `${roomId}/${Date.now()}_${i}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("room-images").upload(path, file);
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from("room-images").getPublicUrl(path);
+          await supabase.from("room_images").insert({
+            room_id: roomId,
+            image_url: urlData.publicUrl,
+            is_primary: isFirst && imageUrls.length === 0 && i === 0,
+            alt_text: form.title,
+          });
+        }
       }
     }
 
     toast({ title: editingRoom ? "Zimmer aktualisiert" : "Zimmer erstellt" });
+    setSaving(false);
     setDialogOpen(false);
     fetchRooms();
   };
@@ -143,11 +213,10 @@ const AdminRooms = () => {
                   {room.size} · max. {room.max_guests} Gäste · €{room.price_per_night}/Nacht
                 </p>
               </div>
-              {/* Location badge */}
-              {(room as any).location && (
+              {room.location && (
                 <span className="hidden sm:flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full font-body font-medium bg-accent/10 text-accent">
                   <MapPin size={10} />
-                  {(room as any).location}
+                  {room.location}
                 </span>
               )}
               <span className={`text-[10px] px-2.5 py-1 rounded-full font-body font-medium ${
@@ -230,20 +299,129 @@ const AdminRooms = () => {
               <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Ausstattung (kommagetrennt)</label>
               <Input value={form.amenities} onChange={e => setForm({ ...form, amenities: e.target.value })} placeholder="WLAN, Minibar, Safe" />
             </div>
-            <div>
-              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Bild hochladen</label>
-              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-accent/30 transition-colors cursor-pointer"
-                onClick={() => document.getElementById("room-image-input")?.click()}>
-                <ImageIcon size={24} className="mx-auto text-muted-foreground/40 mb-2" />
-                <p className="text-xs text-muted-foreground font-body">
-                  {imageFile ? imageFile.name : "Klicken zum Hochladen"}
+
+            {/* === BILDER SECTION === */}
+            <div className="space-y-3">
+              <label className="text-xs font-body uppercase tracking-wider text-muted-foreground block">Bilder</label>
+
+              {/* Existing images (when editing) */}
+              {existingImages.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-body mb-2">Vorhandene Bilder</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {existingImages.map(img => (
+                      <div key={img.id} className="relative group/img rounded-lg overflow-hidden border border-border">
+                        <img src={img.image_url} alt={img.alt_text ?? ""} className="w-full h-20 object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                          <Button
+                            variant="ghost" size="sm"
+                            className="h-7 w-7 p-0 text-white hover:bg-white/20"
+                            title="Als Hauptbild setzen"
+                            onClick={() => editingRoom && setPrimaryImage(img.id, editingRoom.id)}
+                          >
+                            <Star size={14} className={img.is_primary ? "fill-yellow-400 text-yellow-400" : ""} />
+                          </Button>
+                          <Button
+                            variant="ghost" size="sm"
+                            className="h-7 w-7 p-0 text-white hover:bg-destructive/50"
+                            onClick={() => deleteExistingImage(img.id)}
+                          >
+                            <X size={14} />
+                          </Button>
+                        </div>
+                        {img.is_primary && (
+                          <span className="absolute top-1 left-1 text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/90 text-white font-body font-medium">
+                            Haupt
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add by URL */}
+              <div>
+                <p className="text-xs text-muted-foreground font-body mb-1.5 flex items-center gap-1">
+                  <Link2 size={12} /> Bild-URL hinzufügen
                 </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={newImageUrl}
+                    onChange={e => setNewImageUrl(e.target.value)}
+                    placeholder="https://example.com/bild.jpg"
+                    onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addImageUrl())}
+                  />
+                  <Button variant="outline" size="sm" onClick={addImageUrl} className="shrink-0">
+                    <Plus size={14} />
+                  </Button>
+                </div>
               </div>
-              <input id="room-image-input" type="file" accept="image/*" className="hidden" onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
+
+              {/* Queued URL images */}
+              {imageUrls.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {imageUrls.map((url, i) => (
+                    <div key={i} className="relative group/url rounded-lg overflow-hidden border border-accent/30 w-20 h-20">
+                      <img src={url} alt="" className="w-full h-full object-cover" onError={e => (e.currentTarget.style.display = "none")} />
+                      <button
+                        onClick={() => removeImageUrl(i)}
+                        className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload multiple files */}
+              <div>
+                <p className="text-xs text-muted-foreground font-body mb-1.5 flex items-center gap-1">
+                  <ImageIcon size={12} /> Dateien hochladen (mehrere möglich)
+                </p>
+                <div
+                  className="border-2 border-dashed border-border rounded-xl p-4 text-center hover:border-accent/30 transition-colors cursor-pointer"
+                  onClick={() => document.getElementById("room-image-input")?.click()}
+                >
+                  <ImageIcon size={20} className="mx-auto text-muted-foreground/40 mb-1" />
+                  <p className="text-xs text-muted-foreground font-body">
+                    {imageFiles.length > 0 ? `${imageFiles.length} Datei(en) ausgewählt` : "Klicken zum Hochladen"}
+                  </p>
+                </div>
+                <input
+                  id="room-image-input" type="file" accept="image/*" multiple className="hidden"
+                  onChange={e => {
+                    const files = Array.from(e.target.files ?? []);
+                    setImageFiles(prev => [...prev, ...files]);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+
+              {/* Queued file images */}
+              {imageFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {imageFiles.map((file, i) => (
+                    <div key={i} className="relative group/file rounded-lg overflow-hidden border border-border w-20 h-20">
+                      <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeFile(i)}
+                        className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+
             <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Abbrechen</Button>
-              <Button variant="hero" onClick={handleSave} className="shadow-md shadow-accent/10">Speichern</Button>
+              <Button variant="hero" onClick={handleSave} disabled={saving} className="shadow-md shadow-accent/10">
+                {saving ? "Speichert…" : "Speichern"}
+              </Button>
             </div>
           </div>
         </DialogContent>
