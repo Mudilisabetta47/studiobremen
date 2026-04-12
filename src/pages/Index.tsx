@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-hotel.jpg";
-import roomSuite from "@/assets/room-suite.jpg";
+import roomSuite from "@/assets/room-suite-new.jpg";
 
 const fade = {
   initial: { opacity: 0, y: 24 },
