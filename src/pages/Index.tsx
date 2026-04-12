@@ -268,7 +268,7 @@ const Index = () => {
       </section>
 
       {/* ═══ FINAL CTA ═══ */}
-      <section className="bg-primary py-24">
+      <section className="py-24 bg-lime-950">
         <div className="container mx-auto px-4">
           <motion.div {...fade} className="text-center max-w-md mx-auto">
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-primary-foreground mb-4">

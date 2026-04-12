@@ -7,7 +7,7 @@ const Footer = () => {
       {/* Gold line */}
       <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
       
-      <div className="container mx-auto px-4 py-20">
+      <div className="container mx-auto px-4 py-20 bg-lime-800 text-lime-800">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Brand */}
           <div className="md:col-span-5">
