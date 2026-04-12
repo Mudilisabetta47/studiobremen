@@ -4,16 +4,10 @@ import { motion } from "framer-motion";
 import { CalendarDays, Users, Search, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+  Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -62,7 +56,6 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
     if (onSearch) {
       onSearch(filters);
     } else {
-      // Navigate to /zimmer with query params
       const params = new URLSearchParams();
       if (location !== "all") params.set("location", location);
       if (guests && guests !== "2") params.set("guests", guests);
@@ -73,26 +66,26 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
     }
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className="bg-card border border-border shadow-xl rounded-xl p-6 md:p-8"
+      transition={{ duration: 0.7 }}
+      className="bg-card border border-border shadow-lg p-6 md:p-8"
     >
-      <h3 className="font-display text-xl font-semibold text-foreground mb-6 text-center">
-        Verfügbarkeit prüfen
-      </h3>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
         {/* Standort */}
         <div>
-          <label className="text-[11px] font-body uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-            <MapPin size={13} className="text-accent" />
+          <label className="text-[10px] font-body uppercase tracking-[0.3em] text-muted-foreground mb-2 flex items-center gap-1.5">
+            <MapPin size={11} className="text-accent" />
             Standort
           </label>
           <Select value={location} onValueChange={setLocation}>
-            <SelectTrigger className="font-body h-11 border-border/60 focus:ring-accent">
+            <SelectTrigger className="font-body h-11 border-border focus:ring-accent">
               <SelectValue placeholder="Alle Standorte" />
             </SelectTrigger>
             <SelectContent>
@@ -106,20 +99,20 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
 
         {/* Anreise */}
         <div>
-          <label className="text-[11px] font-body uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-            <CalendarDays size={13} className="text-accent" />
+          <label className="text-[10px] font-body uppercase tracking-[0.3em] text-muted-foreground mb-2 flex items-center gap-1.5">
+            <CalendarDays size={11} className="text-accent" />
             Anreise
           </label>
           <Popover>
             <PopoverTrigger asChild>
               <button
                 className={cn(
-                  "flex h-11 w-full items-center gap-2 rounded-md border border-border/60 bg-background px-3 text-sm font-body transition-colors",
+                  "flex h-11 w-full items-center gap-2 border border-border bg-background px-3 text-sm font-body transition-colors",
                   "hover:border-accent/40 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1",
                   !checkIn && "text-muted-foreground",
                 )}
               >
-                <CalendarDays size={14} className="text-accent shrink-0" />
+                <CalendarDays size={13} className="text-accent shrink-0" />
                 {checkIn ? format(checkIn, "dd. MMM yyyy", { locale: de }) : "Datum wählen"}
               </button>
             </PopoverTrigger>
@@ -129,7 +122,7 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
                 selected={checkIn}
                 onSelect={setCheckIn}
                 locale={de}
-                disabled={(date) => date < new Date()}
+                disabled={(date) => date < today}
                 className="pointer-events-auto"
                 classNames={{
                   day_selected: "bg-accent text-accent-foreground hover:bg-accent/90",
@@ -142,20 +135,20 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
 
         {/* Abreise */}
         <div>
-          <label className="text-[11px] font-body uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-            <CalendarDays size={13} className="text-accent" />
+          <label className="text-[10px] font-body uppercase tracking-[0.3em] text-muted-foreground mb-2 flex items-center gap-1.5">
+            <CalendarDays size={11} className="text-accent" />
             Abreise
           </label>
           <Popover>
             <PopoverTrigger asChild>
               <button
                 className={cn(
-                  "flex h-11 w-full items-center gap-2 rounded-md border border-border/60 bg-background px-3 text-sm font-body transition-colors",
+                  "flex h-11 w-full items-center gap-2 border border-border bg-background px-3 text-sm font-body transition-colors",
                   "hover:border-accent/40 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1",
                   !checkOut && "text-muted-foreground",
                 )}
               >
-                <CalendarDays size={14} className="text-accent shrink-0" />
+                <CalendarDays size={13} className="text-accent shrink-0" />
                 {checkOut ? format(checkOut, "dd. MMM yyyy", { locale: de }) : "Datum wählen"}
               </button>
             </PopoverTrigger>
@@ -165,7 +158,7 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
                 selected={checkOut}
                 onSelect={setCheckOut}
                 locale={de}
-                disabled={(date) => date < (checkIn ?? new Date())}
+                disabled={(date) => date <= (checkIn ?? today)}
                 className="pointer-events-auto"
                 classNames={{
                   day_selected: "bg-accent text-accent-foreground hover:bg-accent/90",
@@ -178,8 +171,8 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
 
         {/* Gäste */}
         <div>
-          <label className="text-[11px] font-body uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-            <Users size={13} className="text-accent" />
+          <label className="text-[10px] font-body uppercase tracking-[0.3em] text-muted-foreground mb-2 flex items-center gap-1.5">
+            <Users size={11} className="text-accent" />
             Gäste
           </label>
           <Input
@@ -188,16 +181,16 @@ const BookingWidget = ({ onSearch, defaultFilters }: BookingWidgetProps) => {
             max="6"
             value={guests}
             onChange={(e) => setGuests(e.target.value)}
-            className="font-body h-11 border-border/60 focus-visible:ring-accent"
+            className="font-body h-11 border-border focus-visible:ring-accent"
           />
         </div>
 
         <Button
           variant="hero"
-          className="h-11 gap-2 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+          className="h-11 gap-2"
           onClick={handleSearch}
         >
-          <Search size={16} />
+          <Search size={14} />
           Suchen
         </Button>
       </div>

@@ -48,21 +48,24 @@ const Rooms = () => {
   return (
     <main className="pt-28 md:pt-32">
       <div className="container mx-auto px-4 pt-3">
-        <Breadcrumbs items={[{ label: "Zimmer & Apartments" }]} />
+        <Breadcrumbs items={[{ label: "Apartments" }]} />
       </div>
-      <section className="bg-gradient-hotel py-20">
+
+      <section className="bg-primary py-24">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.7 }}
           >
-            <p className="text-accent tracking-[0.2em] uppercase text-xs font-body mb-3">Unterkünfte</p>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-              Zimmer & Apartments
+            <span className="font-body text-[10px] tracking-[0.4em] uppercase text-accent font-medium">
+              Unterkünfte
+            </span>
+            <h1 className="font-display text-4xl md:text-5xl font-semibold text-primary-foreground mt-3 mb-4">
+              Unsere Apartments
             </h1>
-            <p className="font-body text-primary-foreground/70 max-w-lg mx-auto">
-              Wählen Sie aus unseren komfortablen Zimmern und Apartments – jedes mit eigenem Charakter.
+            <p className="font-body text-primary-foreground/50 max-w-md mx-auto text-sm leading-relaxed">
+              Wählen Sie aus unseren komfortablen Apartments – jedes mit eigenem Charakter.
             </p>
           </motion.div>
         </div>
@@ -72,19 +75,19 @@ const Rooms = () => {
         <BookingWidget onSearch={setFilters} defaultFilters={initialFilters} />
       </section>
 
-      <section className="container mx-auto px-4 pb-24">
+      <section className="container mx-auto px-4 pb-28">
         {isLoading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin text-accent" size={32} />
+            <Loader2 className="animate-spin text-accent" size={28} />
           </div>
         ) : displayRooms.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-muted-foreground font-body text-lg">
-              Keine Unterkünfte für Ihre Auswahl gefunden. Bitte passen Sie die Filter an.
+            <p className="text-muted-foreground font-body text-base">
+              Keine Unterkünfte für Ihre Auswahl gefunden.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
             {displayRooms.map((room, index) => (
               <RoomCard key={room.id} {...room} index={index} />
             ))}
