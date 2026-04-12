@@ -3,9 +3,9 @@ import { MapPin, Phone, Mail } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer className="text-primary-foreground bg-lime-950">
       {/* Gold line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent border-secondary" />
       
       <div className="container mx-auto px-4 py-20 text-lime-800 bg-lime-950 border-black/0">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
