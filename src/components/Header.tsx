@@ -50,19 +50,22 @@ const Header = () => {
     >
       <div className="container mx-auto flex items-center justify-between h-20 px-4">
         {/* Logo */}
-        <Link to="/" className="group">
-          <span className={cn(
-            "font-display text-lg tracking-[0.15em] transition-colors duration-500",
-            scrolled ? "text-foreground" : "text-primary-foreground",
-          )}>
-            STUDIO
-          </span>
-          <span className={cn(
-            "font-display text-lg tracking-[0.15em] ml-1.5 transition-colors duration-500",
-            "text-accent",
-          )}>
-            BREMEN
-          </span>
+        <Link to="/" className="group flex items-center gap-2.5">
+          <img src={bremenWappen} alt="Bremen Wappen" className="h-9 w-auto" />
+          <div className="flex items-baseline">
+            <span className={cn(
+              "font-display text-lg tracking-[0.15em] transition-colors duration-500",
+              scrolled ? "text-foreground" : "text-primary-foreground",
+            )}>
+              STUDIO
+            </span>
+            <span className={cn(
+              "font-display text-lg tracking-[0.15em] ml-1.5 transition-colors duration-500",
+              "text-accent",
+            )}>
+              BREMEN
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Nav */}
