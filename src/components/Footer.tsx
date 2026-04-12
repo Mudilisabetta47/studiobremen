@@ -12,7 +12,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-5">
             <h3 className="font-display text-xl tracking-[0.15em] mb-5">
-              STUDIO <span className="text-accent">BREMEN</span>
+              BOLM <span className="text-accent">APARTMENTS</span>
             </h3>
             <p className="font-body text-primary-foreground/50 text-sm leading-relaxed max-w-xs">
               Erstklassiger Komfort und norddeutsche Gastfreundschaft – 
@@ -74,7 +74,7 @@ const Footer = () => {
 
         <div className="border-t border-primary-foreground/8 mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[11px] text-primary-foreground/30 font-body tracking-wide">
-            © {new Date().getFullYear()} Studio Bremen. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} Bolm Arpartmens. Alle Rechte vorbehalten.
           </p>
           <p className="text-[11px] text-primary-foreground/30 font-body tracking-wide">
             Bremen, Deutschland
