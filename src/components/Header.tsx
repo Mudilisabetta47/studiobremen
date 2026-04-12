@@ -57,13 +57,13 @@ const Header = () => {
               "font-display text-lg tracking-[0.15em] transition-colors duration-500",
               scrolled ? "text-foreground" : "text-primary-foreground",
             )}>
-              STUDIO
+              BOLM
             </span>
             <span className={cn(
               "font-display text-lg tracking-[0.15em] ml-1.5 transition-colors duration-500",
               "text-accent",
             )}>
-              BREMEN
+              APARTMENTS
             </span>
           </div>
         </Link>
