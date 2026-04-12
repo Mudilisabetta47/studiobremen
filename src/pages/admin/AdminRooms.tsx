@@ -104,62 +104,97 @@ const AdminRooms = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    const amenitiesArr = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
-    const payload = {
-      title: form.title,
-      slug: form.slug || form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-      description: form.description, long_description: form.long_description,
-      price_per_night: form.price_per_night, max_guests: form.max_guests,
-      size: form.size, amenities: amenitiesArr,
-      location: form.location || "Bremen-Mitte",
-    };
+    try {
+      const amenitiesArr = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
+      const payload = {
+        title: form.title,
+        slug: form.slug || form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+        description: form.description, long_description: form.long_description,
+        price_per_night: form.price_per_night, max_guests: form.max_guests,
+        size: form.size, amenities: amenitiesArr,
+        location: form.location || "Bremen-Mitte",
+      };
 
-    let roomId = editingRoom?.id;
+      let roomId = editingRoom?.id;
 
-    if (editingRoom) {
-      const { error } = await supabase.from("rooms").update(payload).eq("id", editingRoom.id);
-      if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); setSaving(false); return; }
-    } else {
-      const { data, error } = await supabase.from("rooms").insert(payload).select().single();
-      if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); setSaving(false); return; }
-      roomId = data.id;
-    }
-
-    if (roomId) {
-      const isFirst = existingImages.length === 0 && imageUrls.length === 0 && imageFiles.length === 0;
-
-      // Save URL-based images
-      for (let i = 0; i < imageUrls.length; i++) {
-        await supabase.from("room_images").insert({
-          room_id: roomId,
-          image_url: imageUrls[i],
-          is_primary: isFirst && i === 0,
-          alt_text: form.title,
-        });
+      if (editingRoom) {
+        const { error } = await supabase.from("rooms").update(payload).eq("id", editingRoom.id);
+        if (error) { toast({ title: "Fehler beim Aktualisieren", description: error.message, variant: "destructive" }); setSaving(false); return; }
+      } else {
+        const { data, error } = await supabase.from("rooms").insert(payload).select().single();
+        if (error) { toast({ title: "Fehler beim Erstellen", description: error.message, variant: "destructive" }); setSaving(false); return; }
+        roomId = data.id;
       }
 
-      // Upload file-based images
-      for (let i = 0; i < imageFiles.length; i++) {
-        const file = imageFiles[i];
-        const ext = file.name.split(".").pop();
-        const path = `${roomId}/${Date.now()}_${i}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("room-images").upload(path, file);
-        if (!uploadError) {
+      if (roomId) {
+        const hasPrimaryExisting = existingImages.some(img => img.is_primary);
+        const isFirstImage = !hasPrimaryExisting && existingImages.length === 0;
+        let uploadErrors: string[] = [];
+
+        // Save URL-based images
+        for (let i = 0; i < imageUrls.length; i++) {
+          const { error: imgError } = await supabase.from("room_images").insert({
+            room_id: roomId,
+            image_url: imageUrls[i],
+            is_primary: isFirstImage && i === 0 && imageFiles.length === 0,
+            alt_text: form.title,
+            sort_order: existingImages.length + i,
+          });
+          if (imgError) {
+            console.error("Image URL save error:", imgError);
+            uploadErrors.push(`URL ${i + 1}: ${imgError.message}`);
+          }
+        }
+
+        // Upload file-based images
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i];
+          const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+          const safeName = `${Date.now()}_${i}.${ext}`;
+          const path = `${payload.slug}/${safeName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("room-images")
+            .upload(path, file, { cacheControl: "3600", upsert: false });
+
+          if (uploadError) {
+            console.error("Storage upload error:", uploadError);
+            uploadErrors.push(`Datei "${file.name}": ${uploadError.message}`);
+            continue;
+          }
+
           const { data: urlData } = supabase.storage.from("room-images").getPublicUrl(path);
-          await supabase.from("room_images").insert({
+          const { error: imgError } = await supabase.from("room_images").insert({
             room_id: roomId,
             image_url: urlData.publicUrl,
-            is_primary: isFirst && imageUrls.length === 0 && i === 0,
+            is_primary: isFirstImage && imageUrls.length === 0 && i === 0,
             alt_text: form.title,
+            sort_order: existingImages.length + imageUrls.length + i,
+          });
+          if (imgError) {
+            console.error("Image record save error:", imgError);
+            uploadErrors.push(`DB-Eintrag "${file.name}": ${imgError.message}`);
+          }
+        }
+
+        if (uploadErrors.length > 0) {
+          toast({
+            title: "Bilder-Fehler",
+            description: uploadErrors.join("\n"),
+            variant: "destructive",
           });
         }
       }
-    }
 
-    toast({ title: editingRoom ? "Zimmer aktualisiert" : "Zimmer erstellt" });
-    setSaving(false);
-    setDialogOpen(false);
-    fetchRooms();
+      toast({ title: editingRoom ? "Zimmer aktualisiert" : "Zimmer erstellt" });
+      setSaving(false);
+      setDialogOpen(false);
+      fetchRooms();
+    } catch (err: any) {
+      console.error("Save error:", err);
+      toast({ title: "Unerwarteter Fehler", description: err?.message || "Bitte erneut versuchen.", variant: "destructive" });
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
