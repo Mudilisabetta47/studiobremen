@@ -104,7 +104,6 @@ const AdminRooms = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    console.log("[AdminRooms] handleSave started", { editingRoom: editingRoom?.id, form });
     try {
       const amenitiesArr = form.amenities.split(",").map(a => a.trim()).filter(Boolean);
       const payload = {
@@ -119,14 +118,10 @@ const AdminRooms = () => {
       let roomId = editingRoom?.id;
 
       if (editingRoom) {
-        console.log("[AdminRooms] Updating room", editingRoom.id, payload);
         const { error } = await supabase.from("rooms").update(payload).eq("id", editingRoom.id);
-        console.log("[AdminRooms] Update result:", { error });
         if (error) { toast({ title: "Fehler beim Aktualisieren", description: error.message, variant: "destructive" }); setSaving(false); return; }
       } else {
-        console.log("[AdminRooms] Creating room", payload);
         const { data, error } = await supabase.from("rooms").insert(payload).select().single();
-        console.log("[AdminRooms] Insert result:", { data, error });
         if (error) { toast({ title: "Fehler beim Erstellen", description: error.message, variant: "destructive" }); setSaving(false); return; }
         roomId = data.id;
       }
@@ -138,7 +133,6 @@ const AdminRooms = () => {
 
         // Save URL-based images
         for (let i = 0; i < imageUrls.length; i++) {
-          console.log("[AdminRooms] Saving image URL", i, imageUrls[i]);
           const { error: imgError } = await supabase.from("room_images").insert({
             room_id: roomId,
             image_url: imageUrls[i],
@@ -147,7 +141,7 @@ const AdminRooms = () => {
             sort_order: existingImages.length + i,
           });
           if (imgError) {
-            console.error("[AdminRooms] Image URL save error:", imgError);
+            console.error("Image URL save error:", imgError);
             uploadErrors.push(`URL ${i + 1}: ${imgError.message}`);
           }
         }
@@ -159,19 +153,17 @@ const AdminRooms = () => {
           const safeName = `${Date.now()}_${i}.${ext}`;
           const path = `${payload.slug}/${safeName}`;
 
-          console.log("[AdminRooms] Uploading file", file.name, "to", path);
           const { error: uploadError } = await supabase.storage
             .from("room-images")
             .upload(path, file, { cacheControl: "3600", upsert: false });
 
           if (uploadError) {
-            console.error("[AdminRooms] Storage upload error:", uploadError);
+            console.error("Storage upload error:", uploadError);
             uploadErrors.push(`Datei "${file.name}": ${uploadError.message}`);
             continue;
           }
 
           const { data: urlData } = supabase.storage.from("room-images").getPublicUrl(path);
-          console.log("[AdminRooms] Got public URL:", urlData.publicUrl);
           const { error: imgError } = await supabase.from("room_images").insert({
             room_id: roomId,
             image_url: urlData.publicUrl,
@@ -180,7 +172,7 @@ const AdminRooms = () => {
             sort_order: existingImages.length + imageUrls.length + i,
           });
           if (imgError) {
-            console.error("[AdminRooms] Image record save error:", imgError);
+            console.error("Image record save error:", imgError);
             uploadErrors.push(`DB-Eintrag "${file.name}": ${imgError.message}`);
           }
         }
@@ -199,7 +191,7 @@ const AdminRooms = () => {
       setDialogOpen(false);
       fetchRooms();
     } catch (err: any) {
-      console.error("[AdminRooms] Save error:", err);
+      console.error("Save error:", err);
       toast({ title: "Unerwarteter Fehler", description: err?.message || "Bitte erneut versuchen.", variant: "destructive" });
       setSaving(false);
     }
