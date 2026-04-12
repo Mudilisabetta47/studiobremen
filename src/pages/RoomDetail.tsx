@@ -212,7 +212,7 @@ const RoomDetail = () => {
                   { icon: Maximize2, label: room.size },
                   { icon: Shield, label: "Kostenlose Stornierung" },
                   { icon: Clock, label: "Selbst-Check-in" },
-                ].filter(b => b.label).map((badge, i) => (
+                ].filter(b => b.label).map((badge) => (
                   <motion.span
                     key={badge.label}
                     whileHover={{ scale: 1.05, y: -2 }}
