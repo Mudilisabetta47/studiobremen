@@ -10,7 +10,47 @@ export function useAdmin() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true;
+
+    const checkAdmin = async (userId: string) => {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin");
+
+      return roles && roles.length > 0;
+    };
+
+    // Initial session check
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
+
+      if (!session?.user) {
+        setLoading(false);
+        navigate("/admin/login");
+        return;
+      }
+
+      setUser(session.user);
+      const admin = await checkAdmin(session.user.id);
+      if (!isMounted) return;
+
+      if (!admin) {
+        await supabase.auth.signOut();
+        setIsAdmin(false);
+        setLoading(false);
+        navigate("/admin/login");
+      } else {
+        setIsAdmin(true);
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes (login/logout while on page)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!isMounted) return;
+
       if (!session?.user) {
         setUser(null);
         setIsAdmin(false);
@@ -20,14 +60,10 @@ export function useAdmin() {
       }
 
       setUser(session.user);
+      const admin = await checkAdmin(session.user.id);
+      if (!isMounted) return;
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin");
-
-      if (!roles || roles.length === 0) {
+      if (!admin) {
         await supabase.auth.signOut();
         setIsAdmin(false);
         navigate("/admin/login");
@@ -37,14 +73,10 @@ export function useAdmin() {
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) {
-        setLoading(false);
-        navigate("/admin/login");
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const signOut = async () => {
