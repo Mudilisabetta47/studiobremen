@@ -22,7 +22,10 @@ const AdminRooms = () => {
     title: "", slug: "", description: "", long_description: "",
     price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "",
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState("");
+  const [existingImages, setExistingImages] = useState<{ id: string; image_url: string; is_primary: boolean }[]>([]);
   const { toast } = useToast();
 
   const fetchRooms = async () => {
