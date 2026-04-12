@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowLeft, MapPin, Shield, Clock, Loader2, Users, Maximize2, Star, ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { MapPin, Shield, Clock, Loader2, Users, Maximize2 } from "lucide-react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import RoomGallery from "@/components/RoomGallery";
