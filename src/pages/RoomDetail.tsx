@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Shield, Clock, Loader2, Users, Maximize2 } from "lucide-react";
+import { MapPin, Shield, Clock, Loader2, Users, Maximize2, Star, DoorOpen } from "lucide-react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import RoomGallery from "@/components/RoomGallery";
@@ -9,7 +9,6 @@ import GuestReviews from "@/components/GuestReviews";
 import StickyBookingWidget from "@/components/StickyBookingWidget";
 import { useRoom } from "@/hooks/useRooms";
 import { rooms as staticRooms } from "@/data/rooms";
-import { useRef } from "react";
 
 // Atmospheric descriptions per room type
 const atmosphereTexts: Record<string, { headline: string; mood: string; highlight: string }> = {
@@ -55,32 +54,10 @@ const smoobuIframeUrls: Record<string, string> = {
   "schlachte-studio-no5": "https://login.smoobu.com/de/booking-tool/iframe/800140",
 };
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (i: number = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] as const },
-  }),
-};
-
-const staggerContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.92 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } },
-};
-
-
-
 const RoomDetail = () => {
   const { id } = useParams();
   const { data: dbRoom, isLoading } = useRoom(id);
   const staticRoom = staticRooms.find((r) => r.id === id);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const room = dbRoom
     ? {
@@ -112,331 +89,221 @@ const RoomDetail = () => {
 
   if (isLoading) {
     return (
-      <main className="pt-20 min-h-screen flex items-center justify-center bg-background">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
-        >
-          <Loader2 className="animate-spin text-accent" size={40} />
-        </motion.div>
+      <main className="pt-20 min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-accent" size={32} />
       </main>
     );
   }
 
   if (!room) {
     return (
-      <main className="pt-20 min-h-screen flex items-center justify-center bg-background">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <h1 className="font-display text-4xl mb-4">Zimmer nicht gefunden</h1>
+      <main className="pt-20 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="font-display text-3xl mb-4">Zimmer nicht gefunden</h1>
           <Link to="/zimmer">
             <Button variant="hero">Zurück zur Übersicht</Button>
           </Link>
-        </motion.div>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="pt-28 md:pt-32 bg-background overflow-hidden">
-      {/* Breadcrumb with fade */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto px-4 pt-3"
-      >
+    <main className="pt-24 md:pt-28 bg-background">
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-2 mb-4">
         <Breadcrumbs items={[
           { label: "Zimmer", to: "/zimmer" },
           { label: room.title },
         ]} />
-      </motion.div>
+      </div>
 
-      {/* Gallery with scale entrance */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="container mx-auto px-4 mb-12"
-      >
+      {/* Title section — Airbnb style: title above gallery */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl mb-6">
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="font-display text-2xl md:text-3xl font-bold text-foreground"
+        >
+          {room.title}
+        </motion.h1>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="flex flex-wrap items-center gap-2 mt-2 text-sm font-body text-muted-foreground"
+        >
+          <div className="flex items-center gap-1">
+            <Star size={14} className="text-accent fill-accent" />
+            <span className="font-medium text-foreground">4.7</span>
+          </div>
+          <span>·</span>
+          <span>6 Bewertungen</span>
+          <span>·</span>
+          <span className="flex items-center gap-1">
+            <MapPin size={14} />
+            {room.location || "Bremen"}
+          </span>
+        </motion.div>
+      </div>
+
+      {/* Gallery — full width within container */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl mb-10">
         <RoomGallery images={galleryImages} title={room.title} />
-      </motion.div>
+      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pb-20" ref={contentRef}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left Content */}
-          <div className="lg:col-span-2 space-y-0">
+      {/* Two-column layout: Content left, Booking right */}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pb-24">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
 
-            {/* Hero Title Section */}
-            <motion.section
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              className="mb-14"
+          {/* ─── Left column: all content ─── */}
+          <div className="flex-1 min-w-0">
+
+            {/* Host info / quick overview row */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+              className="flex items-start justify-between pb-8 border-b border-border"
             >
-              <motion.div variants={fadeUp} custom={0} className="mb-2">
-                <span className="inline-block text-[10px] font-body uppercase tracking-[0.35em] text-accent font-semibold mb-3">
-                  {room.location || "Bremen"}
-                </span>
-              </motion.div>
-              
-              <motion.h1
-                variants={fadeUp}
-                custom={1}
-                className="font-display text-4xl md:text-5xl lg:text-[3.4rem] font-bold text-foreground leading-[1.1] mb-5"
-              >
-                {room.title}
-              </motion.h1>
+              <div>
+                <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-1">
+                  {room.size} · Gastgeber: Studio Bremen
+                </h2>
+                <div className="flex flex-wrap items-center gap-3 text-sm font-body text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <Users size={15} /> {room.guests} Gäste
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Maximize2 size={15} /> {room.size}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <DoorOpen size={15} /> Selbst-Check-in
+                  </span>
+                </div>
+              </div>
+              <div className="hidden sm:flex w-14 h-14 rounded-full bg-primary text-primary-foreground items-center justify-center font-display font-bold text-lg shrink-0">
+                SB
+              </div>
+            </motion.div>
 
-              <motion.p
-                variants={fadeUp}
-                custom={2}
-                className="font-body text-lg text-muted-foreground leading-relaxed max-w-2xl mb-8"
-              >
+            {/* Highlights row */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="py-8 border-b border-border space-y-5"
+            >
+              {[
+                { icon: DoorOpen, title: "Selbst-Check-in", desc: "Einfacher Zugang mit dem Smart Lock." },
+                { icon: MapPin, title: "Tolle Lage", desc: "95 % der Gäste haben die Lage mit 5 Sternen bewertet." },
+                { icon: Shield, title: "Kostenlose Stornierung", desc: "Bis 24 Stunden vor Check-in kostenlos stornierbar." },
+              ].map((item) => (
+                <div key={item.title} className="flex gap-4 items-start">
+                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <item.icon size={20} className="text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-body text-base font-semibold text-foreground">{item.title}</h3>
+                    <p className="font-body text-sm text-muted-foreground">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Description */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="py-8 border-b border-border"
+            >
+              <p className="font-body text-base text-foreground leading-7 mb-4">
                 {room.description}
-              </motion.p>
-
-              {/* Quick info badges */}
-              <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3">
-                {[
-                  { icon: MapPin, label: room.location || "Zentrale Lage" },
-                  { icon: Users, label: `Bis zu ${room.guests} Gäste` },
-                  { icon: Maximize2, label: room.size },
-                  { icon: Shield, label: "Kostenlose Stornierung" },
-                  { icon: Clock, label: "Selbst-Check-in" },
-                ].filter(b => b.label).map((badge) => (
-                  <motion.span
-                    key={badge.label}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    className="bg-accent/8 text-accent border border-accent/15 px-4 py-2 rounded-full flex items-center gap-2 text-xs font-body font-medium cursor-default"
-                  >
-                    <badge.icon size={13} />
-                    {badge.label}
-                  </motion.span>
-                ))}
-              </motion.div>
-            </motion.section>
-
-            {/* Elegant divider */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="h-px bg-gradient-to-r from-transparent via-border to-transparent origin-left mb-14"
-            />
-
-            {/* Atmosphere Section — cinematic */}
-            <motion.section
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              className="mb-14"
-            >
-              <motion.span
-                variants={fadeUp}
-                className="text-[10px] font-body uppercase tracking-[0.35em] text-accent font-semibold block mb-4"
-              >
-                Das Erlebnis
-              </motion.span>
-              <motion.h2
-                variants={fadeUp}
-                custom={1}
-                className="font-display text-3xl md:text-4xl font-bold mb-6 text-foreground"
-              >
-                {atmosphere.headline}
-              </motion.h2>
-              <motion.p
-                variants={fadeUp}
-                custom={2}
-                className="font-body text-muted-foreground leading-[1.8] text-base max-w-2xl mb-8"
-              >
-                {atmosphere.mood}
-              </motion.p>
-              <motion.div
-                variants={scaleIn}
-                className="relative bg-gradient-to-br from-accent/5 via-accent/8 to-accent/3 border border-accent/15 rounded-2xl p-7 overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
-                <p className="font-display text-base italic text-foreground/80 leading-relaxed relative z-10">
-                  „{atmosphere.highlight}"
-                </p>
-              </motion.div>
-            </motion.section>
-
-            {/* Divider */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="h-px bg-gradient-to-r from-transparent via-border to-transparent origin-left mb-14"
-            />
-
-            {/* Detailed Description */}
-            <motion.section
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              className="mb-14"
-            >
-              <motion.span
-                variants={fadeUp}
-                className="text-[10px] font-body uppercase tracking-[0.35em] text-accent font-semibold block mb-4"
-              >
-                Im Detail
-              </motion.span>
-              <motion.h2
-                variants={fadeUp}
-                custom={1}
-                className="font-display text-3xl md:text-4xl font-bold mb-6"
-              >
-                Über dieses Apartment
-              </motion.h2>
-              <motion.p
-                variants={fadeUp}
-                custom={2}
-                className="font-body text-muted-foreground leading-[1.8] text-base max-w-2xl"
-              >
+              </p>
+              <p className="font-body text-base text-muted-foreground leading-7">
                 {room.longDescription}
-              </motion.p>
-            </motion.section>
+              </p>
+            </motion.div>
 
-            {/* Divider */}
+            {/* Atmosphere quote */}
             <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="h-px bg-gradient-to-r from-transparent via-border to-transparent origin-left mb-14"
-            />
-
-            {/* Amenity Groups */}
-            <motion.section
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={staggerContainer}
-              className="mb-14"
+              transition={{ duration: 0.4 }}
+              className="py-8 border-b border-border"
             >
-              <motion.span
-                variants={fadeUp}
-                className="text-[10px] font-body uppercase tracking-[0.35em] text-accent font-semibold block mb-4"
-              >
-                Ausstattung
-              </motion.span>
-              <motion.h2
-                variants={fadeUp}
-                custom={1}
-                className="font-display text-3xl md:text-4xl font-bold mb-8"
-              >
-                Alles was Sie brauchen
-              </motion.h2>
-              <motion.div variants={fadeUp} custom={2}>
-                <AmenityGroups amenities={room.amenities} />
-              </motion.div>
-            </motion.section>
+              <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-4">
+                {atmosphere.headline}
+              </h2>
+              <p className="font-body text-base text-muted-foreground leading-7 mb-5">
+                {atmosphere.mood}
+              </p>
+              <div className="bg-accent/5 border-l-4 border-accent rounded-r-lg p-5">
+                <p className="font-body text-sm italic text-foreground/80 leading-relaxed">
+                  {atmosphere.highlight}
+                </p>
+              </div>
+            </motion.div>
 
-            {/* Divider */}
+            {/* Amenities */}
             <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="h-px bg-gradient-to-r from-transparent via-border to-transparent origin-left mb-14"
-            />
-
-            {/* House Rules — premium cards */}
-            <motion.section
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={staggerContainer}
-              className="mb-14"
+              transition={{ duration: 0.4 }}
+              className="py-8 border-b border-border"
             >
-              <motion.span
-                variants={fadeUp}
-                className="text-[10px] font-body uppercase tracking-[0.35em] text-accent font-semibold block mb-4"
-              >
-                Wissenswertes
-              </motion.span>
-              <motion.h2
-                variants={fadeUp}
-                custom={1}
-                className="font-display text-3xl md:text-4xl font-bold mb-8"
-              >
+              <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-6">
+                Was diese Unterkunft bietet
+              </h2>
+              <AmenityGroups amenities={room.amenities} />
+            </motion.div>
+
+            {/* House Rules */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="py-8 border-b border-border"
+            >
+              <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-6">
                 Gut zu wissen
-              </motion.h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { label: "Check-in", value: "Ab 15:00 Uhr", icon: Clock },
                   { label: "Check-out", value: "Bis 11:00 Uhr", icon: Clock },
                   { label: "Stornierung", value: "Kostenlos bis 24h vorher", icon: Shield },
-                ].map((item, i) => (
-                  <motion.div
-                    key={item.label}
-                    variants={fadeUp}
-                    custom={i + 2}
-                    whileHover={{ y: -4, boxShadow: "0 12px 40px -12px hsl(var(--accent) / 0.15)" }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="bg-card border border-border rounded-2xl p-6 group cursor-default"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
-                      <item.icon size={18} className="text-accent" />
-                    </div>
-                    <p className="text-[10px] font-body uppercase tracking-[0.3em] text-muted-foreground mb-1">{item.label}</p>
-                    <p className="font-display text-base font-semibold">{item.value}</p>
-                  </motion.div>
+                ].map((item) => (
+                  <div key={item.label} className="bg-card border border-border rounded-xl p-5">
+                    <item.icon size={20} className="text-accent mb-3" />
+                    <p className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1">{item.label}</p>
+                    <p className="font-body text-sm font-semibold text-foreground">{item.value}</p>
+                  </div>
                 ))}
               </div>
-            </motion.section>
-
-            {/* Divider */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="h-px bg-gradient-to-r from-transparent via-border to-transparent origin-left mb-14"
-            />
+            </motion.div>
 
             {/* Reviews */}
-            <motion.section
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={staggerContainer}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="py-8"
             >
-              <motion.span
-                variants={fadeUp}
-                className="text-[10px] font-body uppercase tracking-[0.35em] text-accent font-semibold block mb-4"
-              >
-                Erfahrungen
-              </motion.span>
-              <motion.h2
-                variants={fadeUp}
-                custom={1}
-                className="font-display text-3xl md:text-4xl font-bold mb-8"
-              >
-                Was unsere Gäste sagen
-              </motion.h2>
-              <motion.div variants={fadeUp} custom={2}>
-                <GuestReviews />
-              </motion.div>
-            </motion.section>
+              <GuestReviews />
+            </motion.div>
           </div>
 
-          {/* Right Sticky Booking Widget */}
-          <div className="hidden lg:block">
+          {/* ─── Right column: sticky booking widget ─── */}
+          <div className="hidden lg:block lg:w-[380px] xl:w-[420px] shrink-0">
             <div className="sticky top-32">
               <StickyBookingWidget
                 roomId={room.dbId}
@@ -451,23 +318,18 @@ const RoomDetail = () => {
         </div>
 
         {/* Mobile fixed booking bar */}
-        <motion.div
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 30 }}
-          className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border p-4 z-40 flex items-center justify-between"
-        >
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border p-4 z-40 flex items-center justify-between">
           <div>
-            <span className="font-display text-2xl font-bold">€{room.price}</span>
+            <span className="font-display text-xl font-bold">€{room.price}</span>
             <span className="text-sm font-body text-muted-foreground"> / Nacht</span>
           </div>
           <Button variant="hero" size="lg" asChild>
             <a href="#booking-mobile">Jetzt buchen</a>
           </Button>
-        </motion.div>
+        </div>
 
         {/* Mobile booking form */}
-        <div id="booking-mobile" className="lg:hidden mt-16">
+        <div id="booking-mobile" className="lg:hidden mt-12">
           <StickyBookingWidget
             roomId={room.dbId}
             roomTitle={room.title}
