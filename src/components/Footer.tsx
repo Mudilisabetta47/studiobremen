@@ -3,15 +3,15 @@ import { MapPin, Phone, Mail } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="text-primary-foreground bg-lime-950">
+    <footer className="text-primary-foreground bg-primary">
       {/* Gold line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent border-secondary" />
+      <div className="h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
       
-      <div className="container mx-auto px-4 py-20 text-lime-800 bg-lime-950 border-black/0">
+      <div className="container mx-auto px-4 py-20">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Brand */}
           <div className="md:col-span-5">
-            <h3 className="font-display text-xl tracking-[0.15em] mb-5 text-primary-foreground bg-[#f2f0ed]/0">
+            <h3 className="font-display text-xl tracking-[0.15em] mb-5 text-primary-foreground">
               BOLM <span className="text-accent">APARTMENTS</span>
             </h3>
             <p className="font-body text-primary-foreground/50 text-sm leading-relaxed max-w-xs">
