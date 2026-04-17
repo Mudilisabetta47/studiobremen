@@ -22,6 +22,7 @@ const AdminRooms = () => {
   const [form, setForm] = useState({
     title: "", slug: "", description: "", long_description: "",
     price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "",
+    smoobu_iframe_id: "",
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -45,7 +46,7 @@ const AdminRooms = () => {
 
   const openCreate = () => {
     setEditingRoom(null);
-    setForm({ title: "", slug: "", description: "", long_description: "", price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "Bremen-Mitte" });
+    setForm({ title: "", slug: "", description: "", long_description: "", price_per_night: 0, max_guests: 2, size: "", amenities: "", location: "Bremen-Mitte", smoobu_iframe_id: "" });
     setImageFiles([]);
     setImageUrls([]);
     setNewImageUrl("");
@@ -61,6 +62,7 @@ const AdminRooms = () => {
       max_guests: room.max_guests, size: room.size ?? "",
       amenities: (room.amenities ?? []).join(", "),
       location: room.location ?? "Bremen-Mitte",
+      smoobu_iframe_id: room.smoobu_iframe_id ?? "",
     });
     setImageFiles([]);
     setImageUrls([]);
@@ -113,6 +115,7 @@ const AdminRooms = () => {
         price_per_night: form.price_per_night, max_guests: form.max_guests,
         size: form.size, amenities: amenitiesArr,
         location: form.location || "Bremen-Mitte",
+        smoobu_iframe_id: form.smoobu_iframe_id.trim() || null,
       };
 
       let roomId = editingRoom?.id;
@@ -333,6 +336,21 @@ const AdminRooms = () => {
             <div>
               <label className="text-xs font-body uppercase tracking-wider text-muted-foreground mb-1.5 block">Ausstattung (kommagetrennt)</label>
               <Input value={form.amenities} onChange={e => setForm({ ...form, amenities: e.target.value })} placeholder="WLAN, Minibar, Safe" />
+            </div>
+            <div>
+              <label className="text-xs font-body uppercase tracking-wider text-accent mb-1.5 flex items-center gap-1.5">
+                <Link2 size={12} />
+                Smoobu Apartment-ID
+              </label>
+              <Input
+                value={form.smoobu_iframe_id}
+                onChange={e => setForm({ ...form, smoobu_iframe_id: e.target.value })}
+                placeholder="z.B. 2064505"
+                className="border-accent/30 focus-visible:ring-accent"
+              />
+              <p className="text-[11px] text-muted-foreground font-body mt-1">
+                Die ID aus der Smoobu-Iframe-URL (z.B. <code>.../iframe/800140/<strong>2064505</strong></code>). Leer lassen, um das interne Buchungsformular zu zeigen.
+              </p>
             </div>
 
             {/* === BILDER SECTION === */}
