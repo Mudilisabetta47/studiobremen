@@ -44,15 +44,7 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
 };
 
-// Smoobu iframe URLs — apartment-specific booking tools
-const smoobuIframeUrls: Record<string, string> = {
-  "stadtwohnung-nr-2": "https://login.smoobu.com/de/booking-tool/iframe/800140/2064505",
-  "city-apartment-no3": "https://login.smoobu.com/de/booking-tool/iframe/800140/2064505",
-  "city-apartment-nr-4": "https://login.smoobu.com/de/booking-tool/iframe/800140/3026151",
-  "city-apartment-no5": "https://login.smoobu.com/de/booking-tool/iframe/800140/2483838",
-  "schlachte-studio-no4": "https://login.smoobu.com/de/booking-tool/iframe/800140/2139631",
-  "schlachte-studio-no5": "https://login.smoobu.com/de/booking-tool/iframe/800140/2351093",
-};
+const SMOOBU_IFRAME_BASE = "https://login.smoobu.com/de/booking-tool/iframe/800140";
 
 const RoomDetail = () => {
   const { id } = useParams();
@@ -73,13 +65,14 @@ const RoomDetail = () => {
         dbId: dbRoom.id,
         allImages: dbRoom.all_images ?? [],
         location: dbRoom.location ?? "",
+        smoobuIframeId: dbRoom.smoobu_iframe_id ?? "",
       }
     : staticRoom
-    ? { ...staticRoom, dbId: staticRoom.id, allImages: [staticRoom.image], location: "" }
+    ? { ...staticRoom, dbId: staticRoom.id, allImages: [staticRoom.image], location: "", smoobuIframeId: "" }
     : null;
 
   const atmosphere = atmosphereTexts[id ?? ""] ?? atmosphereTexts["stadtwohnung-nr-2"];
-  const smoobuIframeUrl = smoobuIframeUrls[id ?? ""];
+  const smoobuIframeUrl = room?.smoobuIframeId ? `${SMOOBU_IFRAME_BASE}/${room.smoobuIframeId}` : undefined;
 
   const galleryImages = room
     ? room.allImages.length > 0
