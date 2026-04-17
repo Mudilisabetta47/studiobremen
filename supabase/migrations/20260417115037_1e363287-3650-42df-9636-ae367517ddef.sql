@@ -1,0 +1,1 @@
+ALTER TABLE public.rooms ADD COLUMN smoobu_iframe_id TEXT;
