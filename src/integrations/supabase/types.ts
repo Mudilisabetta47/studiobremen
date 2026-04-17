@@ -154,6 +154,7 @@ export type Database = {
           price_per_night: number
           size: string | null
           slug: string
+          smoobu_iframe_id: string | null
           sort_order: number | null
           title: string
           updated_at: string
@@ -170,6 +171,7 @@ export type Database = {
           price_per_night: number
           size?: string | null
           slug: string
+          smoobu_iframe_id?: string | null
           sort_order?: number | null
           title: string
           updated_at?: string
@@ -186,6 +188,7 @@ export type Database = {
           price_per_night?: number
           size?: string | null
           slug?: string
+          smoobu_iframe_id?: string | null
           sort_order?: number | null
           title?: string
           updated_at?: string
