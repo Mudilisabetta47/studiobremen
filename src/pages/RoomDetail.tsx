@@ -44,14 +44,14 @@ const atmosphereTexts: Record<string, { headline: string; mood: string; highligh
   },
 };
 
-// Smoobu iframe URLs — all apartments use same booking tool
+// Smoobu iframe URLs — apartment-specific booking tools
 const smoobuIframeUrls: Record<string, string> = {
-  "stadtwohnung-nr-2": "https://login.smoobu.com/de/booking-tool/iframe/800140",
-  "city-apartment-no3": "https://login.smoobu.com/de/booking-tool/iframe/800140",
-  "city-apartment-nr-4": "https://login.smoobu.com/de/booking-tool/iframe/800140",
-  "city-apartment-no5": "https://login.smoobu.com/de/booking-tool/iframe/800140",
-  "schlachte-studio-no4": "https://login.smoobu.com/de/booking-tool/iframe/800140",
-  "schlachte-studio-no5": "https://login.smoobu.com/de/booking-tool/iframe/800140",
+  "stadtwohnung-nr-2": "https://login.smoobu.com/de/booking-tool/iframe/800140/2064505",
+  "city-apartment-no3": "https://login.smoobu.com/de/booking-tool/iframe/800140/2064505",
+  "city-apartment-nr-4": "https://login.smoobu.com/de/booking-tool/iframe/800140/3026151",
+  "city-apartment-no5": "https://login.smoobu.com/de/booking-tool/iframe/800140/2483838",
+  "schlachte-studio-no4": "https://login.smoobu.com/de/booking-tool/iframe/800140/2139631",
+  "schlachte-studio-no5": "https://login.smoobu.com/de/booking-tool/iframe/800140/2351093",
 };
 
 const RoomDetail = () => {
